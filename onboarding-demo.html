@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Squares — Onboarding + Tokens (Supabase demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field:#0b1712;--field-2:#0f211a;--surface:#13251d;--surface-2:#193127;
+    --line:#264436;--line-soft:#1d3528;--chalk:#f1efe6;--chalk-dim:#a9b8ac;--chalk-faint:#6f8275;
+    --money:#f3b53f;--money-deep:#c8902a;--bad:#e0524a;--good:#46b87a;
+    --radius:14px;--radius-sm:9px;--shadow:0 18px 50px -20px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;font-family:'Inter',system-ui,sans-serif;color:var(--chalk);
+    background:radial-gradient(120% 80% at 50% -10%,#16291f 0%,var(--field) 55%,#081009 100%) fixed,var(--field);
+    -webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:760px;margin:0 auto;padding:30px 20px 80px}
+  h1,h2,h3{margin:0;font-weight:700}
+  .anton{font-family:'Anton',sans-serif;text-transform:uppercase;letter-spacing:.03em;font-weight:400}
+  .eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+  .brand .mark{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--money),var(--money-deep));
+    display:grid;place-items:center;color:#1a1305;font-family:'Anton';font-size:20px}
+  .brand .name{font-family:'Anton';font-size:22px;letter-spacing:.05em;text-transform:uppercase;line-height:1}
+  .brand .name small{display:block;font-family:'Inter';font-size:10px;letter-spacing:.22em;color:var(--chalk-faint);font-weight:600;margin-top:3px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:16px}
+  .panel-head h2{font-family:'Anton';font-size:19px;text-transform:uppercase;letter-spacing:.03em}
+  label.fl{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin:0 0 6px}
+  input{width:100%;background:var(--field-2);border:1px solid var(--line);color:var(--chalk);border-radius:9px;padding:11px 13px;font:inherit;font-size:15px}
+  input:focus{outline:none;border-color:var(--money)}
+  input::placeholder{color:var(--chalk-faint)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row > *{flex:1;min-width:0}
+  .stack > * + *{margin-top:12px}
+  .btn{cursor:pointer;font:inherit;font-weight:600;border-radius:10px;padding:11px 18px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--chalk);transition:transform .1s,border-color .12s}
+  .btn:hover{transform:translateY(-1px);border-color:var(--money)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .btn-primary{background:linear-gradient(135deg,var(--money),var(--money-deep));color:#1a1305;border-color:transparent}
+  .btn-ghost{background:transparent}
+  .btn-sm{padding:8px 13px;font-size:13px}
+  .btn-block{width:100%}
+  .divider{display:flex;align-items:center;gap:12px;color:var(--chalk-faint);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:6px 0}
+  .divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}
+  .note{font-size:12.5px;color:var(--chalk-faint);line-height:1.5}
+  .pill{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:999px}
+  .pill.guest{background:color-mix(in srgb,var(--money) 22%,transparent);color:var(--money)}
+  .pill.full{background:color-mix(in srgb,var(--good) 24%,transparent);color:var(--good)}
+  .bal{display:flex;align-items:baseline;gap:10px}
+  .bal .n{font-family:'Anton';font-size:52px;line-height:1;color:var(--money)}
+  .bal .u{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600}
+  .who{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .who .nm{font-family:'Anton';font-size:18px;text-transform:uppercase}
+  .board{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin:8px 0 4px}
+  .cell{aspect-ratio:1;border-radius:6px;background:var(--surface-2);border:1px solid var(--line-soft);
+    display:grid;place-items:center;font-size:10px;font-weight:700;cursor:pointer;color:var(--chalk-dim);transition:border-color .1s}
+  .cell:hover{border-color:var(--money)}
+  .cell.mine{background:var(--money);color:#1a1305;border-color:var(--money)}
+  .cell.taken{background:#3a2f5e;color:#cdbff0;cursor:not-allowed;border-color:transparent}
+  .cell.locked{cursor:not-allowed}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--chalk-faint);margin-top:10px}
+  .legend i{width:12px;height:12px;border-radius:4px;display:inline-block;vertical-align:-2px;margin-right:5px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(18px);z-index:50;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--chalk);padding:12px 18px;border-radius:12px;
+    box-shadow:var(--shadow);opacity:0;transition:opacity .25s,transform .25s,border-color .2s;pointer-events:none;font-weight:600;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{border-color:var(--bad)} .toast.ok{border-color:var(--good)}
+  [hidden]{display:none !important}
+  code{background:var(--field-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:var(--money)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="mark">▣</div>
+    <div class="name">Squares<small>Onboarding + Tokens · Supabase</small></div>
+  </div>
+
+  <!-- ---------- CONNECT ---------- -->
+  <section class="panel" id="connectPanel">
+    <div class="panel-head"><h2>Connect your project</h2><span class="eyebrow">Step 0</span></div>
+    <div class="stack">
+      <div>
+        <label class="fl" for="sbUrl">Project URL</label>
+        <input id="sbUrl" placeholder="https://YOUR-REF.supabase.co" autocomplete="off">
+      </div>
+      <div>
+        <label class="fl" for="sbKey">Publishable key (or legacy anon key)</label>
+        <input id="sbKey" placeholder="sb_publishable_… or eyJ…" autocomplete="off">
+      </div>
+      <button class="btn btn-primary btn-block" id="connectBtn">Connect</button>
+      <p class="note">Both values live in <strong>Project Settings → API</strong>. The publishable/anon key is safe in front-end code — it only works through your RLS policies. Never put the <strong>secret</strong> / <code>service_role</code> key in a browser. Keys are kept in memory here and not saved.</p>
+    </div>
+  </section>
+
+  <!-- ---------- AUTH ---------- -->
+  <section class="panel" id="authPanel" hidden>
+    <div class="panel-head"><h2>Sign in</h2><span class="eyebrow">Step 1</span></div>
+    <div class="stack">
+      <button class="btn btn-primary btn-block" id="guestBtn">Play as guest</button>
+      <p class="note">Guests get a real account (no email) and a 500-token starting balance. You can attach an email later and keep your tokens.</p>
+      <div class="divider">or use an email</div>
+      <div>
+        <label class="fl" for="dispName">Display name (sign up)</label>
+        <input id="dispName" placeholder="Ryan" autocomplete="off">
+      </div>
+      <div>
+        <label class="fl" for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="username">
+      </div>
+      <div>
+        <label class="fl" for="pass">Password</label>
+        <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" id="signupBtn">Create account</button>
+        <button class="btn" id="loginBtn">Log in</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- APP ---------- -->
+  <section id="appPanel" hidden>
+    <div class="panel">
+      <div class="who">
+        <div>
+          <div class="nm" id="whoName">Player</div>
+          <span class="pill" id="whoPill">—</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="signoutBtn">Sign out</button>
+      </div>
+      <div class="bal"><span class="n" id="balNum">0</span><span class="u">tokens</span></div>
+      <p class="note" style="margin-top:8px">Balance is <code>sum(delta)</code> of your ledger rows, served by the <code>my_balance()</code> function and refreshed live over Realtime whenever a transaction lands.</p>
+    </div>
+
+    <div class="panel" id="guestUpgrade" hidden>
+      <div class="panel-head"><h2>Keep your tokens</h2><span class="eyebrow">Upgrade guest</span></div>
+      <div class="stack">
+        <p class="note">Attach an email + password to this guest account. Same user ID, same balance — nothing resets.</p>
+        <div class="row">
+          <input id="upEmail" type="email" placeholder="you@example.com" autocomplete="off">
+          <input id="upPass" type="password" placeholder="new password" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary" id="upgradeBtn">Link email to my account</button>
+        <p class="note">Depending on your <strong>Confirm email</strong> setting, the address may need to be verified via a link before the password is active.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Spend tokens</h2><span class="eyebrow" id="poolStatus">No pool yet</span></div>
+      <div class="stack">
+        <div id="noPool">
+          <p class="note" style="margin-bottom:12px">Create a demo pool to see the server-side buy-in: claiming a square debits tokens, and the per-player cap (<span id="capTxt">10</span> squares here) and balance checks are enforced by <code>join_square()</code> — not by this page.</p>
+          <button class="btn btn-primary btn-block" id="createPoolBtn">Create a $10 demo pool (10 players)</button>
+        </div>
+        <div id="poolView" hidden>
+          <p class="note" id="poolMeta"></p>
+          <div class="board" id="board"></div>
+          <div class="legend">
+            <span><i style="background:var(--money)"></i>Yours</span>
+            <span><i style="background:#3a2f5e"></i>Other player</span>
+            <span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>Open</span>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn btn-sm" id="startBtn">Draw numbers &amp; go live (host)</button>
+            <button class="btn btn-sm" id="settleBtn" disabled>Settle Q1 — 21 to 14 (host)</button>
+          </div>
+          <p class="note" id="settleNote" style="margin-top:10px"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from '@supabase/supabase-js';
+
+const $ = s => document.querySelector(s);
+let supabase = null;
+let user = null;
+
+const ENV_URL = import.meta.env.VITE_SUPABASE_URL;
+const ENV_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+if (ENV_URL) $("#sbUrl").value = ENV_URL;
+if (ENV_KEY) $("#sbKey").value = ENV_KEY;
+let pool = null;          // current demo pool row
+let balanceChannel = null;
+let squaresChannel = null;
+
+function toast(msg, kind){
+  const t=$("#toast"); t.textContent=msg; t.className="toast show"+(kind?(" "+kind):"");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className="toast",2600);
+}
+function show(id, on){ $(id).hidden = !on; }
+const errMsg = e => (e && (e.message || e.error_description || e.msg)) || "Something went wrong";
+
+/* ---------------- connect ---------------- */
+$("#connectBtn").onclick = () => {
+  const url = $("#sbUrl").value.trim().replace(/\/+$/,"");
+  const key = $("#sbKey").value.trim();
+  if(!url || !key){ toast("Enter your project URL and key", "err"); return; }
+  try{
+    supabase = createClient(url, key, { auth:{ persistSession:true, autoRefreshToken:true } });
+  }catch(e){ toast("Couldn't create client: "+errMsg(e), "err"); return; }
+
+  supabase.auth.onAuthStateChange((_evt, session) => { applySession(session); });
+  supabase.auth.getSession().then(({data}) => applySession(data.session));
+  show("#connectPanel", false);
+  toast("Connected", "ok");
+};
+
+/* ---------------- auth ---------------- */
+$("#guestBtn").onclick = async () => {
+  const { error } = await supabase.auth.signInAnonymously();
+  if(error) toast(errMsg(error), "err");
+};
+$("#signupBtn").onclick = async () => {
+  const email=$("#email").value.trim(), password=$("#pass").value, display_name=$("#dispName").value.trim()||"Player";
+  if(!email||!password){ toast("Email and password required", "err"); return; }
+  const { error } = await supabase.auth.signUp({ email, password, options:{ data:{ display_name } } });
+  if(error){ toast(errMsg(error), "err"); return; }
+  toast("Account created. If email confirmation is on, check your inbox.", "ok");
+};
+$("#loginBtn").onclick = async () => {
+  const email=$("#email").value.trim(), password=$("#pass").value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) toast(errMsg(error), "err");
+};
+$("#signoutBtn").onclick = async () => { await supabase.auth.signOut(); };
+
+$("#upgradeBtn").onclick = async () => {
+  const email=$("#upEmail").value.trim(), password=$("#upPass").value;
+  if(!email||!password){ toast("Email and password required", "err"); return; }
+  const { error } = await supabase.auth.updateUser({ email, password });
+  if(error){ toast(errMsg(error), "err"); return; }
+  toast("Email linked — your tokens stay put.", "ok");
+};
+
+/* ---------------- session plumbing ---------------- */
+async function applySession(session){
+  user = session?.user || null;
+  if(!user){
+    teardownRealtime();
+    show("#authPanel", true); show("#appPanel", false);
+    return;
+  }
+  show("#authPanel", false); show("#appPanel", true);
+
+  const isGuest = !!user.is_anonymous;
+  $("#whoPill").textContent = isGuest ? "Guest" : "Full account";
+  $("#whoPill").className = "pill " + (isGuest ? "guest" : "full");
+  show("#guestUpgrade", isGuest);
+
+  // display name from profile (falls back to email)
+  const { data: prof } = await supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
+  $("#whoName").textContent = prof?.display_name || user.email || "Player";
+
+  await refreshBalance();
+  subscribeBalance();
+}
+
+/* ---------------- balance ---------------- */
+async function refreshBalance(){
+  const { data, error } = await supabase.rpc("my_balance");
+  if(error){ toast(errMsg(error), "err"); return; }
+  $("#balNum").textContent = (data ?? 0).toLocaleString();
+}
+function subscribeBalance(){
+  teardownRealtime();
+  balanceChannel = supabase
+    .channel("bal-"+user.id)
+    .on("postgres_changes",
+      { event:"INSERT", schema:"public", table:"transactions", filter:`user_id=eq.${user.id}` },
+      () => refreshBalance())
+    .subscribe();
+}
+function teardownRealtime(){
+  if(balanceChannel){ supabase.removeChannel(balanceChannel); balanceChannel=null; }
+  if(squaresChannel){ supabase.removeChannel(squaresChannel); squaresChannel=null; }
+}
+
+/* ---------------- demo pool + spending ---------------- */
+$("#createPoolBtn").onclick = async () => {
+  const { data, error } = await supabase.rpc("create_pool",
+    { p_away:"Chiefs", p_home:"Bills", p_price:10, p_max:10 });
+  if(error){ toast(errMsg(error), "err"); return; }
+  pool = data;
+  $("#capTxt").textContent = Math.ceil(100/pool.max_players);
+  show("#noPool", false); show("#poolView", true);
+  $("#poolStatus").textContent = "Pool: open";
+  $("#poolMeta").innerHTML = `<strong>${pool.away} @ ${pool.home}</strong> · ${pool.price_per_square} tokens/square · up to ${Math.ceil(100/pool.max_players)} squares each. Tap an open square to buy it.`;
+  await renderBoard();
+  subscribeSquares();
+  toast("Pool created", "ok");
+};
+
+async function renderBoard(){
+  const { data: squares, error } = await supabase.from("squares")
+    .select("idx,owner_id").eq("pool_id", pool.id).order("idx");
+  if(error){ toast(errMsg(error), "err"); return; }
+  const board = $("#board"); board.innerHTML="";
+  const live = pool.status !== "open";
+  squares.forEach(sq => {
+    const c = document.createElement("div");
+    c.className = "cell";
+    if(sq.owner_id === user.id){ c.classList.add("mine"); c.textContent="●"; }
+    else if(sq.owner_id){ c.classList.add("taken"); c.textContent="•"; }
+    else { c.textContent = sq.idx; }
+    if(live) c.classList.add("locked");
+    c.onclick = () => onCellClick(sq);
+    board.appendChild(c);
+  });
+}
+
+async function onCellClick(sq){
+  if(pool.status !== "open"){ toast("Pool is locked", "err"); return; }
+  if(sq.owner_id === user.id){
+    const { error } = await supabase.rpc("release_square", { p_pool:pool.id, p_idx:sq.idx });
+    if(error){ toast(errMsg(error), "err"); return; }
+    toast("Square released — refunded", "ok");
+  } else if(sq.owner_id){
+    toast("That square is taken", "err"); return;
+  } else {
+    const { error } = await supabase.rpc("join_square", { p_pool:pool.id, p_idx:sq.idx });
+    if(error){ toast(errMsg(error), "err"); return; }   // surfaces cap / balance / taken from the server
+  }
+  await renderBoard();
+}
+
+function subscribeSquares(){
+  squaresChannel = supabase
+    .channel("sq-"+pool.id)
+    .on("postgres_changes",
+      { event:"*", schema:"public", table:"squares", filter:`pool_id=eq.${pool.id}` },
+      () => renderBoard())
+    .subscribe();
+}
+
+$("#startBtn").onclick = async () => {
+  const { data, error } = await supabase.rpc("start_pool", { p_pool:pool.id });
+  if(error){ toast(errMsg(error), "err"); return; }
+  pool = data;
+  $("#poolStatus").textContent = "Pool: live";
+  $("#settleBtn").disabled = false;
+  await renderBoard();
+  toast("Numbers drawn server-side — pool is live", "ok");
+};
+
+$("#settleBtn").onclick = async () => {
+  // demo final scores: home 21, away 14
+  const { data, error } = await supabase.rpc("pay_quarter",
+    { p_pool:pool.id, p_quarter:1, p_home:21, p_away:14 });
+  if(error){ toast(errMsg(error), "err"); return; }
+  const youWon = data.winner_id === user.id;
+  $("#settleNote").innerHTML = `Q1 winning square: index <strong>${data.winning_idx}</strong> · payout <strong>${data.payout}</strong> tokens` +
+    (data.winner_id ? (youWon ? " — that's you, balance just went up." : " — went to another player.") : " — that square was open, no winner.");
+  toast("Q1 settled", "ok");
+};
+
+// Auto-connect from environment variables (set via .env.local or Vercel dashboard)
+if (ENV_URL && ENV_KEY) {
+  try {
+    supabase = createClient(ENV_URL, ENV_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+    supabase.auth.onAuthStateChange((_evt, session) => { applySession(session); });
+    supabase.auth.getSession().then(({ data }) => applySession(data.session));
+    show("#connectPanel", false);
+    toast("Connected via environment config", "ok");
+  } catch(e) {
+    console.warn("Auto-connect failed:", e);
+  }
+}
+</script>
+</body>
+</html>

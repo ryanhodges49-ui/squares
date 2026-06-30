@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Squares — Live Football Pool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field:#0b1712;        /* deep night-field */
+    --field-2:#0f211a;
+    --surface:#13251d;
+    --surface-2:#193127;
+    --line:#264436;
+    --line-soft:#1d3528;
+    --chalk:#f1efe6;         /* field paint */
+    --chalk-dim:#a9b8ac;
+    --chalk-faint:#6f8275;
+    --money:#f3b53f;         /* payouts / wins */
+    --money-deep:#c8902a;
+    --home:#0080C6;          /* injected per game */
+    --away:#E31837;
+    --home-ink:#ffffff;
+    --away-ink:#ffffff;
+    --radius:14px;
+    --radius-sm:9px;
+    --shadow:0 18px 50px -20px rgba(0,0,0,.7);
+    --maxw:1180px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, #16291f 0%, var(--field) 55%, #081009 100%) fixed,
+      var(--field);
+    color:var(--chalk);
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  /* faint yard-line hash texture */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:repeating-linear-gradient(90deg,transparent 0 79px,rgba(241,239,230,.022) 79px 80px);
+  }
+  .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:22px 20px 80px}
+
+  h1,h2,h3{margin:0;font-weight:700;letter-spacing:.01em}
+  .anton{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.02em;text-transform:uppercase}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600}
+  .tabnum{font-variant-numeric:tabular-nums}
+
+  /* ---------- top bar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .mark{
+    width:38px;height:38px;border-radius:9px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--money),var(--money-deep));
+    display:grid;place-items:center;color:#1a1305;font-family:'Anton';font-size:20px;
+    box-shadow:0 6px 18px -6px rgba(243,181,63,.6);
+  }
+  .brand .name{font-family:'Anton';font-size:23px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+  .brand .name small{display:block;font-family:'Inter';font-size:10px;letter-spacing:.24em;color:var(--chalk-faint);font-weight:600;margin-top:3px}
+
+  .stepper{display:flex;align-items:center;gap:6px}
+  .step{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600}
+  .step .dot{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;background:var(--surface)}
+  .step.done .dot{background:var(--money);color:#1a1305;border-color:var(--money)}
+  .step.active{color:var(--chalk)}
+  .step.active .dot{border-color:var(--money);color:var(--money)}
+  .step .bar{width:26px;height:1.5px;background:var(--line)}
+  @media(max-width:640px){.step .label{display:none}.step .bar{width:14px}}
+
+  /* ---------- scoreboard banner (prep+live) ---------- */
+  .scorebar{
+    display:flex;align-items:stretch;gap:0;margin-bottom:24px;border-radius:var(--radius);overflow:hidden;
+    border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface);
+  }
+  .sb-team{flex:1;display:flex;align-items:center;gap:14px;padding:16px 20px;min-width:0}
+  .sb-team.home{background:linear-gradient(90deg,color-mix(in srgb,var(--home) 26%,transparent),transparent)}
+  .sb-team.away{flex-direction:row-reverse;text-align:right;background:linear-gradient(270deg,color-mix(in srgb,var(--away) 26%,transparent),transparent)}
+  .sb-chip{width:46px;height:46px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;font-family:'Anton';font-size:17px;letter-spacing:.02em}
+  .sb-team.home .sb-chip{background:var(--home);color:var(--home-ink)}
+  .sb-team.away .sb-chip{background:var(--away);color:var(--away-ink)}
+  .sb-meta{min-width:0}
+  .sb-meta .tag{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600}
+  .sb-meta .nm{font-family:'Anton';font-size:19px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sb-score{font-family:'Anton';font-size:40px;line-height:1;margin-left:auto;color:var(--chalk)}
+  .sb-team.away .sb-score{margin-left:0;margin-right:auto}
+  .sb-center{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 22px;background:var(--field-2);border-left:1px solid var(--line);border-right:1px solid var(--line);min-width:120px}
+  .sb-center .q{font-family:'Anton';font-size:22px;color:var(--money);letter-spacing:.05em}
+  .sb-center .clk{font-variant-numeric:tabular-nums;font-size:13px;color:var(--chalk-dim);font-weight:600;letter-spacing:.08em}
+  .sb-center .pot{font-size:11px;color:var(--chalk-faint);letter-spacing:.1em;margin-top:2px}
+  @media(max-width:680px){
+    .sb-score{font-size:30px}.sb-meta .nm{font-size:15px}.sb-chip{width:38px;height:38px;font-size:14px}
+    .sb-center{min-width:92px;padding:8px 12px}.sb-team{padding:12px 14px;gap:10px}
+  }
+
+  /* ---------- panels / cards ---------- */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+  .panel + .panel{margin-top:18px}
+  .panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .panel-head h2{font-family:'Anton';font-size:21px;text-transform:uppercase;letter-spacing:.03em}
+
+  /* ---------- setup: matchup cards ---------- */
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .match{
+    text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--surface-2);
+    border-radius:var(--radius-sm);padding:0;overflow:hidden;color:inherit;font:inherit;transition:transform .12s,border-color .12s;
+    display:flex;flex-direction:column;
+  }
+  .match:hover{transform:translateY(-2px);border-color:var(--money)}
+  .match:focus-visible{outline:2px solid var(--money);outline-offset:2px}
+  .match .bars{display:flex;height:8px}
+  .match .bars i{flex:1}
+  .match .body{padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:10px}
+  .match .ab{font-family:'Anton';font-size:24px;letter-spacing:.02em}
+  .match .at{font-size:12px;color:var(--chalk-faint);font-weight:700;letter-spacing:.1em}
+  .match.custom{align-items:center;justify-content:center;border-style:dashed}
+  .match.custom .body{flex-direction:column;gap:4px;padding:26px 16px}
+  .match.custom .plus{font-family:'Anton';font-size:26px;color:var(--money)}
+  .match.custom .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-dim);font-weight:600}
+
+  /* ---------- custom builder ---------- */
+  .builder{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:start}
+  @media(max-width:720px){.builder{grid-template-columns:1fr;gap:14px}.builder .vs{display:none}}
+  .vs{align-self:center;font-family:'Anton';font-size:20px;color:var(--chalk-faint)}
+  .field-label{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin-bottom:7px}
+  input[type=text],input[type=number],select{
+    width:100%;background:var(--field-2);border:1px solid var(--line);color:var(--chalk);
+    border-radius:9px;padding:11px 13px;font:inherit;font-size:15px;transition:border-color .12s;
+  }
+  input:focus,select:focus{outline:none;border-color:var(--money)}
+  input::placeholder{color:var(--chalk-faint)}
+  .swatches{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .swatch{width:26px;height:26px;border-radius:7px;border:2px solid transparent;cursor:pointer;padding:0}
+  .swatch[aria-pressed=true]{border-color:var(--chalk);transform:scale(1.08)}
+  .swatch:focus-visible{outline:2px solid var(--money);outline-offset:2px}
+
+  .settings-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:4px}
+
+  /* ---------- buttons ---------- */
+  .btn{cursor:pointer;font:inherit;font-weight:600;border-radius:10px;padding:12px 22px;border:1px solid var(--line);background:var(--surface-2);color:var(--chalk);transition:transform .1s,background .12s,border-color .12s;letter-spacing:.02em}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:focus-visible{outline:2px solid var(--money);outline-offset:2px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .btn-primary{background:linear-gradient(135deg,var(--money),var(--money-deep));color:#1a1305;border-color:transparent;box-shadow:0 10px 26px -10px rgba(243,181,63,.6)}
+  .btn-ghost{background:transparent}
+  .btn-lg{padding:15px 30px;font-size:16px}
+  .btn-sm{padding:8px 14px;font-size:13px;border-radius:8px}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:22px}
+  .spacer{flex:1}
+
+  /* ---------- roster / players ---------- */
+  .prep-layout{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.prep-layout{grid-template-columns:1fr}}
+  .roster .add{display:flex;gap:8px;margin-bottom:14px}
+  .roster .add input{flex:1}
+  .players{display:flex;flex-direction:column;gap:8px}
+  .player{
+    display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--surface-2);cursor:pointer;transition:border-color .12s;text-align:left;color:inherit;font:inherit;width:100%;
+  }
+  .player[aria-pressed=true]{border-color:var(--chalk)}
+  .player .pdot{width:18px;height:18px;border-radius:6px;flex:0 0 auto}
+  .player .pn{font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .player .pc{font-variant-numeric:tabular-nums;color:var(--chalk-dim);font-size:13px;font-weight:600}
+  .player .px{margin-left:4px;color:var(--chalk-faint);background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1}
+  .player .px:hover{color:var(--away)}
+  .player.active-ind{box-shadow:inset 0 0 0 1px var(--money)}
+  .hint{font-size:12.5px;color:var(--chalk-faint);line-height:1.45}
+  .roster .counts{display:flex;justify-content:space-between;font-size:12px;color:var(--chalk-dim);margin:14px 0 8px;letter-spacing:.04em}
+
+  /* ---------- the board ---------- */
+  .board-shell{overflow-x:auto;padding-bottom:6px}
+  .board{
+    --cell:clamp(28px,7vw,52px);
+    display:grid;
+    grid-template-columns:26px repeat(11,var(--cell));
+    grid-template-rows:auto repeat(11,var(--cell));
+    gap:3px;width:max-content;margin:0 auto;
+  }
+  .axis-team{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:7px;border-radius:8px;font-family:'Anton';font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+  }
+  .axis-team.home{background:var(--home);color:var(--home-ink)}
+  .axis-left{
+    display:flex;align-items:center;justify-content:center;
+    writing-mode:vertical-rl;transform:rotate(180deg);border-radius:8px;
+    font-family:'Anton';font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+    background:var(--away);color:var(--away-ink);
+  }
+  .hdr{
+    display:grid;place-items:center;height:var(--cell);border-radius:7px;background:var(--field-2);
+    font-family:'Anton';font-size:clamp(14px,3.6vw,22px);color:var(--money);border:1px solid var(--line-soft);
+  }
+  .hdr.q{color:var(--chalk-faint)}
+  .cell{
+    height:var(--cell);border-radius:7px;background:var(--surface-2);border:1px solid var(--line-soft);
+    display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden;
+    transition:transform .08s,border-color .12s,background .12s;padding:2px;
+  }
+  .cell:hover{border-color:var(--money)}
+  .cell.taken{cursor:pointer}
+  .cell .ini{font-size:clamp(8px,1.9vw,12px);font-weight:700;letter-spacing:.02em;text-align:center;line-height:1.05;z-index:1;
+    color:var(--chalk);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 1px}
+  .cell .fill{position:absolute;inset:0;opacity:.85}
+  .board.locked .cell{cursor:default}
+  .board.locked .cell:hover{border-color:var(--line-soft)}
+  .cell.win{border-color:var(--money);box-shadow:0 0 0 2px var(--money),0 0 26px -2px var(--money);z-index:3;animation:pop .5s ease}
+  .cell.win::after{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(243,181,63,.5),transparent 60%);animation:spot 1.6s ease-in-out infinite;pointer-events:none}
+  @keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+  @keyframes spot{0%,100%{opacity:.25}50%{opacity:.75}}
+  /* number-draw reveal */
+  .hdr.drawing{animation:flip .5s ease}
+  @keyframes flip{0%{transform:rotateX(90deg);color:var(--chalk-faint)}100%{transform:rotateX(0);color:var(--money)}}
+
+  /* ---------- live controls ---------- */
+  .live-layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+  @media(max-width:980px){.live-layout{grid-template-columns:1fr}}
+  .score-edit{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+  .stepper-score{display:flex;align-items:center;gap:8px}
+  .stepper-score .sv{font-family:'Anton';font-size:30px;min-width:46px;text-align:center;font-variant-numeric:tabular-nums}
+  .rbtn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);color:var(--chalk);font-size:20px;cursor:pointer;line-height:1}
+  .rbtn:hover{border-color:var(--money)}
+  .quick{display:flex;gap:6px;flex-wrap:wrap}
+  .results{display:flex;flex-direction:column;gap:10px}
+  .res{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2)}
+  .res.pending{opacity:.55;border-style:dashed}
+  .res .ql{font-family:'Anton';font-size:15px;width:42px;color:var(--money);letter-spacing:.04em}
+  .res .info{flex:1;min-width:0}
+  .res .info .win{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .res .info .sub{font-size:12px;color:var(--chalk-faint);font-variant-numeric:tabular-nums}
+  .res .pay{font-family:'Anton';font-size:18px;color:var(--money);font-variant-numeric:tabular-nums}
+  .banner{margin-top:4px;padding:14px 16px;border-radius:10px;background:color-mix(in srgb,var(--money) 16%,var(--surface));border:1px solid var(--money);display:flex;align-items:center;gap:12px}
+  .banner .bw{font-weight:700}
+  .banner .bp{font-family:'Anton';font-size:18px;color:var(--money);margin-left:auto;font-variant-numeric:tabular-nums}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:50;background:var(--surface-2);border:1px solid var(--money);color:var(--chalk);padding:13px 20px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;font-weight:600}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  [hidden]{display:none !important}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--chalk-faint);margin-top:14px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body data-phase="game">
+<div class="wrap">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">▣</div>
+      <div class="name">Squares<small>Live Football Pool</small></div>
+    </div>
+    <nav class="stepper" aria-label="Progress">
+      <div class="step active" data-step="game"><span class="dot">1</span><span class="label">Pick game</span></div>
+      <span class="bar"></span>
+      <div class="step" data-step="pool"><span class="dot">2</span><span class="label">Set up &amp; join</span></div>
+      <span class="bar"></span>
+      <div class="step" data-step="live"><span class="dot">3</span><span class="label">Go live</span></div>
+    </nav>
+  </header>
+
+  <!-- SCOREBOARD (prep + live) -->
+  <div class="scorebar" id="scorebar" hidden>
+    <div class="sb-team away">
+      <div class="sb-chip" id="sbAwayChip">AWY</div>
+      <div class="sb-meta"><div class="tag">Away</div><div class="nm" id="sbAwayName">Away</div></div>
+      <div class="sb-score tabnum" id="sbAwayScore">0</div>
+    </div>
+    <div class="sb-center">
+      <div class="q" id="sbQuarter">PREP</div>
+      <div class="clk" id="sbClock">10×10</div>
+      <div class="pot" id="sbPot"></div>
+    </div>
+    <div class="sb-team home">
+      <div class="sb-chip" id="sbHomeChip">HOM</div>
+      <div class="sb-meta"><div class="tag">Home</div><div class="nm" id="sbHomeName">Home</div></div>
+      <div class="sb-score tabnum" id="sbHomeScore">0</div>
+    </div>
+  </div>
+
+  <!-- ============ PHASE 1: GAME ============ -->
+  <section id="gamePhase">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Pick a game</h2>
+        <span class="eyebrow">Marquee matchups</span>
+      </div>
+      <div class="grid-cards" id="matchCards"></div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE 2: POOL (settings + join) ============ -->
+  <section id="poolPhase" hidden>
+
+    <div class="panel" id="customPanel" hidden>
+      <div class="panel-head">
+        <h2>Name your teams</h2>
+        <button class="btn btn-ghost btn-sm" id="backToMatches">← Back to games</button>
+      </div>
+      <div class="builder">
+        <div>
+          <label class="field-label">Away team</label>
+          <input type="text" id="awayName" placeholder="e.g. Visitors" maxlength="20">
+          <div class="swatches" id="awaySwatches"></div>
+        </div>
+        <div class="vs">@</div>
+        <div>
+          <label class="field-label">Home team</label>
+          <input type="text" id="homeName" placeholder="e.g. Home" maxlength="20">
+          <div class="swatches" id="homeSwatches"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Pool settings</h2><span class="eyebrow">Buy-in, payouts &amp; players</span></div>
+      <div class="settings-row">
+        <div>
+          <label class="field-label" for="price">Price per square ($)</label>
+          <input type="number" id="price" value="5" min="0" step="1">
+        </div>
+        <div>
+          <label class="field-label" for="splitSel">Quarter payout split</label>
+          <select id="splitSel">
+            <option value="15,25,15,45">Standard — 15 / 25 / 15 / 45</option>
+            <option value="25,25,25,25">Even — 25 / 25 / 25 / 25</option>
+            <option value="20,20,20,40">Heavy final — 20 / 20 / 20 / 40</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="maxPlayers">Number of players</label>
+          <input type="number" id="maxPlayers" value="10" min="1" max="100" step="1">
+        </div>
+        <div>
+          <label class="field-label">Total pot</label>
+          <input type="text" id="potPreview" value="$500" readonly>
+        </div>
+      </div>
+      <p class="hint" id="capNote" style="margin-top:14px"></p>
+    </div>
+
+    <div class="prep-layout">
+      <div class="panel roster">
+        <div class="panel-head"><h2>Players</h2></div>
+        <div class="add">
+          <input type="text" id="playerName" placeholder="Add a player" maxlength="16">
+          <button class="btn btn-sm btn-primary" id="addPlayer">Join</button>
+        </div>
+        <p class="hint">Add a player, then tap open squares to join the pool for them. Tap a claimed square to release it.</p>
+        <div class="counts"><span id="claimedCount">0 / 100 claimed</span><span id="spotsLeft"></span></div>
+        <div class="players" id="playersList"></div>
+        <div class="actions" style="margin-top:16px">
+          <button class="btn btn-sm" id="fillRandom">Auto-fill remaining</button>
+          <button class="btn btn-sm btn-ghost" id="clearBoard">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Choose your squares</h2>
+          <span class="eyebrow" id="openHint">Open squares — pending players</span>
+        </div>
+        <div class="board-shell">
+          <div class="board" id="joinBoard"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--surface-2);border:1px solid var(--line)"></i> Open / pending</span>
+          <span><i style="background:var(--money)"></i> Numbers drawn at kickoff</span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost" id="backToGame">← Change game</button>
+          <div class="spacer"></div>
+          <button class="btn btn-primary btn-lg" id="lockBoard">Draw numbers &amp; go live →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ PHASE 3: LIVE ============ -->
+  <section id="livePhase" hidden>
+    <div class="live-layout">
+      <div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Live board</h2>
+            <span class="eyebrow" id="liveStatus">Enter scores or simulate</span>
+          </div>
+          <div class="board-shell">
+            <div class="board locked" id="liveBoard"></div>
+          </div>
+          <div id="winBanner"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Score control</h2></div>
+          <div class="score-edit">
+            <div>
+              <label class="field-label" id="awayEditLbl">Away</label>
+              <div class="stepper-score">
+                <button class="rbtn" data-side="away" data-d="-1">–</button>
+                <span class="sv tabnum" id="awayEdit">0</span>
+                <button class="rbtn" data-side="away" data-d="1">+</button>
+              </div>
+            </div>
+            <div>
+              <label class="field-label" id="homeEditLbl">Home</label>
+              <div class="stepper-score">
+                <button class="rbtn" data-side="home" data-d="-1">–</button>
+                <span class="sv tabnum" id="homeEdit">0</span>
+                <button class="rbtn" data-side="home" data-d="1">+</button>
+              </div>
+            </div>
+            <div class="quick">
+              <span class="field-label" style="width:100%">Quick add (home/away)</span>
+              <button class="btn btn-sm" data-quick="away,6">Away TD</button>
+              <button class="btn btn-sm" data-quick="away,3">Away FG</button>
+              <button class="btn btn-sm" data-quick="home,6">Home TD</button>
+              <button class="btn btn-sm" data-quick="home,3">Home FG</button>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:4px">
+            <button class="btn btn-primary" id="endQuarter">End Q1 &amp; pay winner</button>
+            <button class="btn" id="simBtn">▶ Simulate game</button>
+            <div class="spacer"></div>
+            <button class="btn btn-ghost btn-sm" id="newPool">New pool</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Payouts</h2><span class="eyebrow" id="potTag"></span></div>
+        <div class="results" id="resultsList"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+(function(){
+  /* ---------------- data ---------------- */
+  const TEAMS = [
+    {name:"Chiefs",abbr:"KC",c:"#E31837"},   {name:"Bills",abbr:"BUF",c:"#00338D"},
+    {name:"49ers",abbr:"SF",c:"#AA0000"},    {name:"Cowboys",abbr:"DAL",c:"#0b2c5c"},
+    {name:"Eagles",abbr:"PHI",c:"#004C54"},  {name:"Lions",abbr:"DET",c:"#0076B6"},
+    {name:"Ravens",abbr:"BAL",c:"#241773"},  {name:"Bengals",abbr:"CIN",c:"#FB4F14"},
+    {name:"Packers",abbr:"GB",c:"#203731"},  {name:"Dolphins",abbr:"MIA",c:"#008E97"},
+    {name:"Texans",abbr:"HOU",c:"#A71930"},  {name:"Vikings",abbr:"MIN",c:"#4F2683"},
+    {name:"Steelers",abbr:"PIT",c:"#c89a17"},{name:"Seahawks",abbr:"SEA",c:"#0a3a6b"},
+    {name:"Chargers",abbr:"LAC",c:"#0080C6"},{name:"Rams",abbr:"LAR",c:"#003594"}
+  ];
+  const PRESETS = [
+    {away:"Chiefs",home:"Bills"}, {away:"49ers",home:"Cowboys"},
+    {away:"Eagles",home:"Lions"}, {away:"Ravens",home:"Bengals"},
+    {away:"Dolphins",home:"Chiefs"}, {away:"Packers",home:"Vikings"}
+  ];
+  const SWATCH_COLORS = ["#E31837","#00338D","#0076B6","#008E97","#FB4F14","#4F2683","#203731","#c89a17","#AA0000","#0b2c5c","#004C54","#9b1d1d"];
+  const PLAYER_COLORS = ["#e0524a","#3ba2e0","#46b87a","#e0a23b","#b07adf","#e06fae","#54c4bd","#d98442","#7d9be0","#c2cb55","#e0746f","#5fd08a"];
+
+  const teamByName = n => TEAMS.find(t => t.name === n);
+
+  /* ---------------- state ---------------- */
+  const S = {
+    phase:"game",
+    isCustom:false,
+    maxPlayers:10,
+    away:{name:"Away",color:"#E31837"},
+    home:{name:"Home",color:"#0080C6"},
+    price:5,
+    split:[15,25,15,45],
+    squares:Array(100).fill(null),       // playerId or null
+    players:[],                          // {id,name,color}
+    activePlayer:null,
+    colDigits:[0,1,2,3,4,5,6,7,8,9],     // home (top)
+    rowDigits:[0,1,2,3,4,5,6,7,8,9],     // away (left)
+    locked:false,
+    score:{home:0,away:0},
+    quarter:1,                           // next quarter to pay (1..4)
+    results:[],                          // {q,home,away,idx,playerId}
+    sim:null
+  };
+  let pid = 1;
+
+  /* ---------------- helpers ---------------- */
+  const $ = s => document.querySelector(s);
+  const el = (t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function lum(hex){const h=hex.replace('#','');const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (0.2126*r+0.7152*g+0.0722*b)/255;}
+  const ink = hex => lum(hex) > 0.55 ? "#10140d" : "#ffffff";
+  function lighten(hex,amt){const h=hex.replace('#','');let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);r=Math.round(r+(255-r)*amt);g=Math.round(g+(255-g)*amt);b=Math.round(b+(255-b)*amt);return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');}
+  const readAbbr = c => lum(c) < 0.45 ? lighten(c,0.55) : c;
+  function abbr3(name){const w=name.trim().split(/\s+/);if(w.length>1)return (w[0][0]+w[1][0]+(w[1][1]||'')).toUpperCase();return name.slice(0,3).toUpperCase();}
+  function initials(name){const w=name.trim().split(/\s+/);if(w.length>1)return (w[0][0]+w[1][0]).toUpperCase();return name.slice(0,3);}
+  const money = n => "$"+Math.round(n).toLocaleString();
+  const pot = () => S.price*100;
+  const cap = () => Math.ceil(100 / Math.max(1, S.maxPlayers));
+  const playerCount = id => S.squares.filter(x => x === id).length;
+  function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+
+  /* ---------------- theme injection ---------------- */
+  function applyTheme(){
+    const r=document.documentElement.style;
+    r.setProperty('--home',S.home.color);
+    r.setProperty('--away',S.away.color);
+    r.setProperty('--home-ink',ink(S.home.color));
+    r.setProperty('--away-ink',ink(S.away.color));
+  }
+
+  /* =====================================================
+     GAME PICKER
+  ===================================================== */
+  function renderMatchCards(){
+    const box=$("#matchCards");box.innerHTML="";
+    PRESETS.forEach(p=>{
+      const a=teamByName(p.away),h=teamByName(p.home);
+      const card=el("button","match");
+      card.type="button";
+      card.innerHTML=`<div class="bars"><i style="background:${a.c}"></i><i style="background:${h.c}"></i></div>
+        <div class="body">
+          <div style="text-align:center"><div class="ab" style="color:${readAbbr(a.c)}">${a.abbr}</div><div class="at">${a.name}</div></div>
+          <div style="color:var(--chalk-faint);font-family:Anton">@</div>
+          <div style="text-align:center"><div class="ab" style="color:${readAbbr(h.c)}">${h.abbr}</div><div class="at">${h.name}</div></div>
+        </div>`;
+      card.onclick=()=>{
+        S.isCustom=false;
+        S.away={name:a.name,color:a.c}; S.home={name:h.name,color:h.c};
+        applyTheme();
+        enterPool();
+      };
+      box.appendChild(card);
+    });
+    const custom=el("button","match custom");custom.type="button";
+    custom.innerHTML=`<div class="body"><div class="plus">+</div><div class="lbl">Build your own</div></div>`;
+    custom.onclick=()=>{
+      S.isCustom=true;
+      S.away={name:"Away",color:"#E31837"}; S.home={name:"Home",color:"#0080C6"};
+      $("#awayName").value=""; $("#homeName").value="";
+      applyTheme(); buildSwatches();
+      enterPool();
+    };
+    box.appendChild(custom);
+  }
+
+  function buildSwatches(){
+    [["#awaySwatches","away"],["#homeSwatches","home"]].forEach(([sel,side])=>{
+      const box=$(sel);box.innerHTML="";
+      SWATCH_COLORS.forEach(c=>{
+        const b=el("button","swatch");b.type="button";b.style.background=c;
+        b.setAttribute("aria-pressed", S[side].color===c ? "true":"false");
+        b.onclick=()=>{
+          S[side].color=c;
+          box.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
+          b.setAttribute("aria-pressed","true");
+          applyTheme(); updateScorebar();
+        };
+        box.appendChild(b);
+      });
+    });
+  }
+
+  /* enter the pool (settings + join) page */
+  function enterPool(){
+    // fresh roster for a new pool
+    S.squares=Array(100).fill(null); S.players=[]; S.activePlayer=null; pid=1;
+    $("#customPanel").hidden = !S.isCustom;
+    setPhase("pool");
+    updatePoolDerived();
+    updateScorebar();
+    buildBoard("#joinBoard",false);
+    renderPlayers(); updateCounts();
+  }
+
+  function updatePoolDerived(){
+    const p=parseFloat($("#price").value)||0; S.price=p;
+    let mp=parseInt($("#maxPlayers").value,10); if(isNaN(mp)||mp<1)mp=1; if(mp>100)mp=100;
+    S.maxPlayers=mp;
+    $("#potPreview").value=money(p*100);
+    $("#capNote").textContent=`With ${mp} player${mp>1?"s":""}, each player can claim up to ${cap()} square${cap()>1?"s":""}.`;
+    updateCounts();
+  }
+
+  /* =====================================================
+     PHASE SWITCHING
+  ===================================================== */
+  function setPhase(ph){
+    S.phase=ph;
+    document.body.dataset.phase=ph;
+    $("#gamePhase").hidden = ph!=="game";
+    $("#poolPhase").hidden = ph!=="pool";
+    $("#livePhase").hidden = ph!=="live";
+    $("#scorebar").hidden = ph==="game";
+    document.querySelectorAll(".step").forEach(s=>{
+      const order=["game","pool","live"], i=order.indexOf(s.dataset.step), cur=order.indexOf(ph);
+      s.classList.toggle("active", i===cur);
+      s.classList.toggle("done", i<cur);
+    });
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function updateScorebar(){
+    $("#sbAwayName").textContent=S.away.name;
+    $("#sbHomeName").textContent=S.home.name;
+    $("#sbAwayChip").textContent=abbr3(S.away.name);
+    $("#sbHomeChip").textContent=abbr3(S.home.name);
+    $("#sbAwayScore").textContent=S.score.away;
+    $("#sbHomeScore").textContent=S.score.home;
+    $("#sbPot").textContent="Pot "+money(pot());
+    if(S.phase==="pool"){ $("#sbQuarter").textContent="LOBBY"; $("#sbClock").textContent="Joining"; }
+  }
+
+  /* =====================================================
+     PREP — board + roster
+  ===================================================== */
+  function buildBoard(target,locked){
+    const board=$(target);board.innerHTML="";board.classList.toggle("locked",!!locked);
+    // home team band (top)
+    const homeBand=el("div","axis-team home");
+    homeBand.textContent=S.home.name+" → last digit";
+    homeBand.style.gridRow="1"; homeBand.style.gridColumn="3 / span 10";
+    board.appendChild(homeBand);
+    // away team band (left, vertical)
+    const awayBand=el("div","axis-left");
+    awayBand.textContent=S.away.name+" → last digit";
+    awayBand.style.gridColumn="1"; awayBand.style.gridRow="3 / span 10";
+    board.appendChild(awayBand);
+    // home digit headers (row 2, cols 3..12)
+    for(let c=0;c<10;c++){
+      const h=el("div","hdr"+(locked?"":" q"));h.dataset.col=c;
+      h.textContent=locked?S.colDigits[c]:"?";
+      h.style.gridRow="2"; h.style.gridColumn=String(3+c);
+      board.appendChild(h);
+    }
+    // rows
+    for(let r=0;r<10;r++){
+      const rh=el("div","hdr"+(locked?"":" q"));rh.dataset.row=r;
+      rh.textContent=locked?S.rowDigits[r]:"?";
+      rh.style.gridRow=String(3+r); rh.style.gridColumn="2";
+      board.appendChild(rh);
+      for(let c=0;c<10;c++){
+        const idx=r*10+c;
+        const cell=el("div","cell");cell.dataset.idx=idx;
+        cell.style.gridRow=String(3+r); cell.style.gridColumn=String(3+c);
+        renderCell(cell,idx);
+        if(!locked) cell.onclick=()=>onCellClick(idx);
+        board.appendChild(cell);
+      }
+    }
+  }
+
+  function renderCell(cell,idx){
+    const pidv=S.squares[idx];
+    cell.innerHTML="";
+    if(pidv!=null){
+      const pl=S.players.find(p=>p.id===pidv);
+      cell.classList.add("taken");
+      const fill=el("div","fill");fill.style.background=pl?pl.color:"#555";cell.appendChild(fill);
+      const ini=el("div","ini");ini.textContent=pl?initials(pl.name):"";
+      ini.style.color=pl?ink(pl.color):"#fff";
+      cell.appendChild(ini);
+    }else{
+      cell.classList.remove("taken");
+    }
+  }
+
+  function onCellClick(idx){
+    if(S.squares[idx]!=null){ S.squares[idx]=null; }
+    else{
+      if(!S.activePlayer){ toast("Add a player and select them first"); return; }
+      if(playerCount(S.activePlayer) >= cap()){ toast(`Max ${cap()} squares per player`); return; }
+      S.squares[idx]=S.activePlayer;
+    }
+    renderCell($(`#joinBoard .cell[data-idx="${idx}"]`),idx);
+    updateCounts();
+  }
+
+  function renderPlayers(){
+    const box=$("#playersList");box.innerHTML="";
+    if(!S.players.length){
+      const e=el("p","hint");e.textContent="No players yet — add a few names above.";box.appendChild(e);return;
+    }
+    S.players.forEach(p=>{
+      const count=playerCount(p.id);
+      const full=count>=cap();
+      const row=el("button","player");row.type="button";
+      row.setAttribute("aria-pressed", S.activePlayer===p.id?"true":"false");
+      if(S.activePlayer===p.id) row.classList.add("active-ind");
+      row.innerHTML=`<span class="pdot" style="background:${p.color}"></span>
+        <span class="pn">${escapeHtml(p.name)}</span>
+        <span class="pc"${full?' style="color:var(--money)"':''}>${count}/${cap()}</span>`;
+      const x=el("button","px");x.type="button";x.textContent="✕";x.title="Remove player";
+      x.onclick=ev=>{ev.stopPropagation();removePlayer(p.id);};
+      row.appendChild(x);
+      row.onclick=()=>{S.activePlayer=p.id;renderPlayers();};
+      box.appendChild(row);
+    });
+  }
+  function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+
+  function addPlayer(){
+    const inp=$("#playerName");const name=inp.value.trim();
+    if(!name) return;
+    if(S.players.length >= S.maxPlayers){ toast(`Pool is full — ${S.maxPlayers} players max`); return; }
+    const color=PLAYER_COLORS[S.players.length % PLAYER_COLORS.length];
+    const id=pid++; S.players.push({id,name,color});
+    S.activePlayer=id; inp.value=""; inp.focus();
+    renderPlayers(); updateCounts();
+  }
+  function removePlayer(id){
+    S.players=S.players.filter(p=>p.id!==id);
+    S.squares=S.squares.map(x=>x===id?null:x);
+    if(S.activePlayer===id) S.activePlayer=S.players.length?S.players[0].id:null;
+    renderPlayers(); buildBoard("#joinBoard",false); updateCounts();
+  }
+
+  function updateCounts(){
+    const taken=S.squares.filter(x=>x!=null).length;
+    $("#claimedCount").textContent=taken+" / 100 claimed";
+    const spots=Math.max(0,S.maxPlayers-S.players.length);
+    $("#spotsLeft").textContent=(100-taken)+" open · "+spots+" spot"+(spots===1?"":"s")+" left";
+    renderPlayers();
+  }
+
+  function fillRandom(){
+    if(!S.players.length){toast("Add at least one player first");return;}
+    const open=[];S.squares.forEach((v,i)=>{if(v==null)open.push(i);});
+    for(const idx of shuffle(open)){
+      const eligible=S.players.filter(p=>playerCount(p.id)<cap());
+      if(!eligible.length){ toast("Everyone hit their square limit"); break; }
+      eligible.sort((a,b)=>playerCount(a.id)-playerCount(b.id));
+      S.squares[idx]=eligible[0].id;
+    }
+    buildBoard("#joinBoard",false); updateCounts();
+  }
+  function clearBoard(){ S.squares=Array(100).fill(null); buildBoard("#joinBoard",false); updateCounts(); }
+
+  /* =====================================================
+     LOCK + draw numbers
+  ===================================================== */
+  function lockBoard(){
+    const taken=S.squares.filter(x=>x!=null).length;
+    if(taken===0){toast("Claim at least one square first");return;}
+    S.colDigits=shuffle([0,1,2,3,4,5,6,7,8,9]);
+    S.rowDigits=shuffle([0,1,2,3,4,5,6,7,8,9]);
+    S.locked=true;
+    setPhase("live");
+    buildBoard("#liveBoard",true);
+    // animate the number draw
+    const hdrs=$("#liveBoard").querySelectorAll(".hdr");
+    hdrs.forEach((h,i)=>{setTimeout(()=>h.classList.add("drawing"),60+i*45);});
+    resetLive();
+    updateScorebar();
+    toast("Numbers drawn — game on");
+  }
+
+  /* =====================================================
+     LIVE
+  ===================================================== */
+  function resetLive(){
+    S.score={home:0,away:0};
+    S.quarter=1; S.results=[];
+    $("#awayEditLbl").textContent=S.away.name;
+    $("#homeEditLbl").textContent=S.home.name;
+    $("#potTag").textContent="Pot "+money(pot());
+    updateScoreEditors(); renderResults(); updateEndBtn();
+    $("#winBanner").innerHTML="";
+    clearWinHighlight();
+    $("#sbQuarter").textContent="Q1"; $("#sbClock").textContent="15:00";
+  }
+
+  function quarterPayout(q){ return pot()*(S.split[q-1]/100); }
+
+  function updateScoreEditors(){
+    $("#homeEdit").textContent=S.score.home;
+    $("#awayEdit").textContent=S.score.away;
+    updateScorebar();
+  }
+
+  function changeScore(side,d){
+    if(S.sim) return;
+    S.score[side]=Math.max(0,S.score[side]+d);
+    updateScoreEditors();
+  }
+
+  function winningIndex(){
+    const hd=S.score.home%10, ad=S.score.away%10;
+    const col=S.colDigits.indexOf(hd), row=S.rowDigits.indexOf(ad);
+    return row*10+col;
+  }
+
+  function clearWinHighlight(){ $("#liveBoard").querySelectorAll(".cell.win").forEach(c=>c.classList.remove("win")); }
+
+  function endQuarter(){
+    if(S.quarter>4) return;
+    const idx=winningIndex();
+    const playerId=S.squares[idx];
+    const pl=S.players.find(p=>p.id===playerId);
+    S.results.push({q:S.quarter,home:S.score.home,away:S.score.away,idx,playerId});
+    // highlight
+    clearWinHighlight();
+    const cell=$(`#liveBoard .cell[data-idx="${idx}"]`);
+    if(cell){cell.classList.add("win");cell.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}
+    // banner
+    const pay=quarterPayout(S.quarter);
+    const qname=S.quarter===4?"Final":"Q"+S.quarter;
+    const winnerTxt=pl?pl.name:"Open square — no winner";
+    $("#winBanner").innerHTML=`<div class="banner"><span class="bw">${qname}: ${escapeHtml(winnerTxt)}</span>
+      <span style="color:var(--chalk-faint);font-size:13px">${S.away.name} ${S.score.away} · ${S.home.name} ${S.score.home}</span>
+      <span class="bp">${money(pay)}</span></div>`;
+    renderResults();
+    S.quarter++;
+    updateEndBtn();
+    if(pl) toast(`${qname} pays ${pl.name} — ${money(pay)}`);
+    if(S.quarter>4){ $("#sbQuarter").textContent="FINAL"; $("#sbClock").textContent="0:00"; if(S.sim) stopSim(); }
+    else { $("#sbQuarter").textContent="Q"+S.quarter; }
+  }
+
+  function updateEndBtn(){
+    const btn=$("#endQuarter");
+    if(S.quarter>4){ btn.disabled=true; btn.textContent="Game complete"; return; }
+    btn.disabled=false;
+    btn.textContent=(S.quarter===4?"End Final & pay winner":"End Q"+S.quarter+" & pay winner");
+  }
+
+  function renderResults(){
+    const box=$("#resultsList");box.innerHTML="";
+    for(let q=1;q<=4;q++){
+      const r=S.results.find(x=>x.q===q);
+      const qname=q===4?"Final":"Q"+q;
+      const pay=quarterPayout(q);
+      const row=el("div","res"+(r?"":" pending"));
+      if(r){
+        const pl=S.players.find(p=>p.id===r.playerId);
+        const hd=r.home%10, ad=r.away%10;
+        row.innerHTML=`<div class="ql">${qname}</div>
+          <div class="info"><div class="win">${pl?escapeHtml(pl.name):"No winner (open)"}</div>
+          <div class="sub">${S.away.name} ${r.away} (${ad}) · ${S.home.name} ${r.home} (${hd})</div></div>
+          <div class="pay">${money(pay)}</div>`;
+      }else{
+        row.innerHTML=`<div class="ql">${qname}</div>
+          <div class="info"><div class="win" style="color:var(--chalk-faint)">Pending</div>
+          <div class="sub">${S.split[q-1]}% of pot</div></div>
+          <div class="pay" style="color:var(--chalk-faint)">${money(pay)}</div>`;
+      }
+      box.appendChild(row);
+    }
+  }
+
+  /* ---------- simulation ---------- */
+  function startSim(){
+    if(S.quarter>4){toast("Game already complete");return;}
+    $("#simBtn").textContent="⏸ Pause";
+    $("#liveStatus").textContent="Simulating…";
+    let tick=0;
+    const QTICKS=22; // ticks per quarter
+    S.sim=setInterval(()=>{
+      tick++;
+      // random scoring event
+      const roll=Math.random();
+      if(roll>0.80){ // score
+        const side=Math.random()<0.5?"home":"away";
+        const pts=Math.random()<0.55?7:3;
+        S.score[side]+=pts;
+        updateScoreEditors();
+      }
+      // clock
+      const remain=Math.max(0,QTICKS-tick);
+      const secs=Math.round((remain/QTICKS)*900);
+      $("#sbClock").textContent=Math.floor(secs/60)+":"+String(secs%60).padStart(2,"0");
+      if(tick>=QTICKS){
+        endQuarter();
+        tick=0;
+        if(S.quarter>4){ stopSim(); $("#liveStatus").textContent="Final"; }
+      }
+    },380);
+  }
+  function stopSim(){ if(S.sim){clearInterval(S.sim);S.sim=null;} $("#simBtn").textContent="▶ Simulate game"; $("#liveStatus").textContent=S.quarter>4?"Final":"Enter scores or simulate"; }
+  function toggleSim(){ if(S.sim) stopSim(); else startSim(); }
+
+  /* =====================================================
+     WIRING
+  ===================================================== */
+  function init(){
+    renderMatchCards(); buildSwatches(); applyTheme();
+
+    $("#price").addEventListener("input",updatePoolDerived);
+    $("#maxPlayers").addEventListener("input",updatePoolDerived);
+    $("#splitSel").addEventListener("change",e=>{S.split=e.target.value.split(",").map(Number);});
+    $("#awayName").addEventListener("input",()=>{S.away.name=$("#awayName").value.trim()||"Away";updateScorebar();});
+    $("#homeName").addEventListener("input",()=>{S.home.name=$("#homeName").value.trim()||"Home";updateScorebar();});
+    $("#backToMatches").onclick=()=>setPhase("game");
+
+    $("#addPlayer").onclick=addPlayer;
+    $("#playerName").addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer();});
+    $("#fillRandom").onclick=fillRandom;
+    $("#clearBoard").onclick=clearBoard;
+    $("#backToGame").onclick=()=>setPhase("game");
+    $("#lockBoard").onclick=lockBoard;
+
+    document.querySelectorAll(".rbtn").forEach(b=>b.onclick=()=>changeScore(b.dataset.side,parseInt(b.dataset.d,10)));
+    document.querySelectorAll("[data-quick]").forEach(b=>b.onclick=()=>{
+      if(S.sim)return;
+      const [side,pts]=b.dataset.quick.split(",");
+      S.score[side]+=parseInt(pts,10); updateScoreEditors();
+    });
+    $("#endQuarter").onclick=()=>{ if(S.sim)stopSim(); endQuarter(); };
+    $("#simBtn").onclick=toggleSim;
+    $("#newPool").onclick=()=>{
+      stopSim();
+      S.squares=Array(100).fill(null); S.players=[]; S.activePlayer=null; pid=1;
+      S.locked=false; S.score={home:0,away:0}; S.quarter=1; S.results=[];
+      setPhase("game");
+    };
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
