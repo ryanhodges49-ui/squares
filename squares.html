@@ -9,18 +9,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --field:#0b1712;        /* deep night-field */
+    --field:#0b1712;
     --field-2:#0f211a;
     --surface:#13251d;
     --surface-2:#193127;
     --line:#264436;
     --line-soft:#1d3528;
-    --chalk:#f1efe6;         /* field paint */
+    --chalk:#f1efe6;
     --chalk-dim:#a9b8ac;
     --chalk-faint:#6f8275;
-    --money:#f3b53f;         /* payouts / wins */
+    --money:#f3b53f;
     --money-deep:#c8902a;
-    --home:#0080C6;          /* injected per game */
+    --home:#0080C6;
     --away:#E31837;
     --home-ink:#ffffff;
     --away-ink:#ffffff;
@@ -43,7 +43,6 @@
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
-  /* faint yard-line hash texture */
   body::before{
     content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
     background-image:repeating-linear-gradient(90deg,transparent 0 79px,rgba(241,239,230,.022) 79px 80px);
@@ -76,7 +75,7 @@
   .step .bar{width:26px;height:1.5px;background:var(--line)}
   @media(max-width:640px){.step .label{display:none}.step .bar{width:14px}}
 
-  /* ---------- scoreboard banner (prep+live) ---------- */
+  /* ---------- scoreboard ---------- */
   .scorebar{
     display:flex;align-items:stretch;gap:0;margin-bottom:24px;border-radius:var(--radius);overflow:hidden;
     border:1px solid var(--line);box-shadow:var(--shadow);background:var(--surface);
@@ -101,13 +100,13 @@
     .sb-center{min-width:92px;padding:8px 12px}.sb-team{padding:12px 14px;gap:10px}
   }
 
-  /* ---------- panels / cards ---------- */
+  /* ---------- panels ---------- */
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
-  .panel + .panel{margin-top:18px}
+  .panel+.panel{margin-top:18px}
   .panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
   .panel-head h2{font-family:'Anton';font-size:21px;text-transform:uppercase;letter-spacing:.03em}
 
-  /* ---------- setup: matchup cards ---------- */
+  /* ---------- game picker cards ---------- */
   .grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
   .match{
     text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--surface-2);
@@ -121,28 +120,6 @@
   .match .body{padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:10px}
   .match .ab{font-family:'Anton';font-size:24px;letter-spacing:.02em}
   .match .at{font-size:12px;color:var(--chalk-faint);font-weight:700;letter-spacing:.1em}
-  .match.custom{align-items:center;justify-content:center;border-style:dashed}
-  .match.custom .body{flex-direction:column;gap:4px;padding:26px 16px}
-  .match.custom .plus{font-family:'Anton';font-size:26px;color:var(--money)}
-  .match.custom .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-dim);font-weight:600}
-
-  /* ---------- custom builder ---------- */
-  .builder{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:start}
-  @media(max-width:720px){.builder{grid-template-columns:1fr;gap:14px}.builder .vs{display:none}}
-  .vs{align-self:center;font-family:'Anton';font-size:20px;color:var(--chalk-faint)}
-  .field-label{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin-bottom:7px}
-  input[type=text],input[type=number],select{
-    width:100%;background:var(--field-2);border:1px solid var(--line);color:var(--chalk);
-    border-radius:9px;padding:11px 13px;font:inherit;font-size:15px;transition:border-color .12s;
-  }
-  input:focus,select:focus{outline:none;border-color:var(--money)}
-  input::placeholder{color:var(--chalk-faint)}
-  .swatches{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-  .swatch{width:26px;height:26px;border-radius:7px;border:2px solid transparent;cursor:pointer;padding:0}
-  .swatch[aria-pressed=true]{border-color:var(--chalk);transform:scale(1.08)}
-  .swatch:focus-visible{outline:2px solid var(--money);outline-offset:2px}
-
-  .settings-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:4px}
 
   /* ---------- buttons ---------- */
   .btn{cursor:pointer;font:inherit;font-weight:600;border-radius:10px;padding:12px 22px;border:1px solid var(--line);background:var(--surface-2);color:var(--chalk);transition:transform .1s,background .12s,border-color .12s;letter-spacing:.02em}
@@ -155,26 +132,6 @@
   .btn-sm{padding:8px 14px;font-size:13px;border-radius:8px}
   .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:22px}
   .spacer{flex:1}
-
-  /* ---------- roster / players ---------- */
-  .prep-layout{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
-  @media(max-width:900px){.prep-layout{grid-template-columns:1fr}}
-  .roster .add{display:flex;gap:8px;margin-bottom:14px}
-  .roster .add input{flex:1}
-  .players{display:flex;flex-direction:column;gap:8px}
-  .player{
-    display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
-    background:var(--surface-2);cursor:pointer;transition:border-color .12s;text-align:left;color:inherit;font:inherit;width:100%;
-  }
-  .player[aria-pressed=true]{border-color:var(--chalk)}
-  .player .pdot{width:18px;height:18px;border-radius:6px;flex:0 0 auto}
-  .player .pn{font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .player .pc{font-variant-numeric:tabular-nums;color:var(--chalk-dim);font-size:13px;font-weight:600}
-  .player .px{margin-left:4px;color:var(--chalk-faint);background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1}
-  .player .px:hover{color:var(--away)}
-  .player.active-ind{box-shadow:inset 0 0 0 1px var(--money)}
-  .hint{font-size:12.5px;color:var(--chalk-faint);line-height:1.45}
-  .roster .counts{display:flex;justify-content:space-between;font-size:12px;color:var(--chalk-dim);margin:14px 0 8px;letter-spacing:.04em}
 
   /* ---------- the board ---------- */
   .board-shell{overflow-x:auto;padding-bottom:6px}
@@ -217,7 +174,6 @@
   .cell.win::after{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,rgba(243,181,63,.5),transparent 60%);animation:spot 1.6s ease-in-out infinite;pointer-events:none}
   @keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
   @keyframes spot{0%,100%{opacity:.25}50%{opacity:.75}}
-  /* number-draw reveal */
   .hdr.drawing{animation:flip .5s ease}
   @keyframes flip{0%{transform:rotateX(90deg);color:var(--chalk-faint)}100%{transform:rotateX(0);color:var(--money)}}
 
@@ -241,18 +197,60 @@
   .banner{margin-top:4px;padding:14px 16px;border-radius:10px;background:color-mix(in srgb,var(--money) 16%,var(--surface));border:1px solid var(--money);display:flex;align-items:center;gap:12px}
   .banner .bw{font-weight:700}
   .banner .bp{font-family:'Anton';font-size:18px;color:var(--money);margin-left:auto;font-variant-numeric:tabular-nums}
+  .field-label{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin-bottom:7px}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:50;background:var(--surface-2);border:1px solid var(--money);color:var(--chalk);padding:13px 20px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;font-weight:600}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
   [hidden]{display:none !important}
   .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--chalk-faint);margin-top:14px}
   .legend span{display:flex;align-items:center;gap:6px}
   .legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
 
-  @media(prefers-reduced-motion:reduce){
-    *{animation:none !important;transition:none !important}
+  /* ---------- pool config cards ---------- */
+  .pool-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+  .pool-card{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:22px 18px 18px;cursor:pointer;transition:transform .12s,border-color .12s;
+    display:flex;flex-direction:column;
   }
+  .pool-card:hover{transform:translateY(-2px);border-color:var(--money)}
+  .pool-card:focus-visible{outline:2px solid var(--money);outline-offset:2px}
+  .pc-eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin-bottom:10px}
+  .pc-price{font-family:'Anton';font-size:48px;line-height:.9;color:var(--money)}
+  .pc-price sup{font-family:'Inter';font-size:20px;line-height:0;vertical-align:super;color:var(--money)}
+  .pc-persq{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin:6px 0 14px}
+  .pc-meta{font-size:13px;color:var(--chalk-dim);line-height:1.7}
+  .pc-pot{font-weight:700;color:var(--chalk);margin-top:8px;font-size:15px}
+  .pc-join{margin-top:16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk-faint);font-weight:700}
+  .pool-card:hover .pc-join{color:var(--money)}
+
+  /* ---------- lobby ---------- */
+  .lobby-layout{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+  @media(max-width:860px){.lobby-layout{grid-template-columns:1fr}}
+
+  .lobby-player{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;border:1px solid var(--line-soft);background:var(--surface-2)}
+  .lobby-player+.lobby-player{margin-top:6px}
+  .lobby-player.you{border-color:var(--money)}
+  .lobby-player.pending{opacity:.4}
+  .lp-dot{width:14px;height:14px;border-radius:4px;flex:0 0 auto}
+  .lp-name{flex:1;font-weight:600;font-size:14px}
+  .lp-count{font-size:12px;color:var(--chalk-dim);font-variant-numeric:tabular-nums}
+
+  .prog-wrap{margin:8px 0 16px}
+  .prog-label{font-size:14px;font-weight:600;margin-bottom:8px;font-variant-numeric:tabular-nums}
+  .prog-bar{height:6px;background:var(--field-2);border-radius:4px;overflow:hidden;border:1px solid var(--line-soft)}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--money),var(--money-deep));border-radius:4px;transition:width .5s ease;width:0%}
+
+  .cd-banner{text-align:center;padding:24px 20px;border-radius:var(--radius-sm);background:color-mix(in srgb,var(--money) 14%,var(--surface));border:1px solid var(--money);margin-top:16px}
+  .cd-num{font-family:'Anton';font-size:64px;color:var(--money);line-height:1;animation:cdpulse 1s ease-in-out infinite}
+  .cd-lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-faint);font-weight:600;margin-top:6px}
+  @keyframes cdpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+  .board.preview{--cell:clamp(20px,4.2vw,36px)}
+  #lobbyBoard .cell{cursor:default}
+  #lobbyBoard .cell:hover{border-color:var(--line-soft);transform:none}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
 </style>
 </head>
 <body data-phase="game">
@@ -267,13 +265,13 @@
     <nav class="stepper" aria-label="Progress">
       <div class="step active" data-step="game"><span class="dot">1</span><span class="label">Pick game</span></div>
       <span class="bar"></span>
-      <div class="step" data-step="pool"><span class="dot">2</span><span class="label">Set up &amp; join</span></div>
+      <div class="step" data-step="lobby"><span class="dot">2</span><span class="label">Join pool</span></div>
       <span class="bar"></span>
-      <div class="step" data-step="live"><span class="dot">3</span><span class="label">Go live</span></div>
+      <div class="step" data-step="live"><span class="dot">3</span><span class="label">Live</span></div>
     </nav>
   </header>
 
-  <!-- SCOREBOARD (prep + live) -->
+  <!-- SCOREBOARD -->
   <div class="scorebar" id="scorebar" hidden>
     <div class="sb-team away">
       <div class="sb-chip" id="sbAwayChip">AWY</div>
@@ -281,8 +279,8 @@
       <div class="sb-score tabnum" id="sbAwayScore">0</div>
     </div>
     <div class="sb-center">
-      <div class="q" id="sbQuarter">PREP</div>
-      <div class="clk" id="sbClock">10×10</div>
+      <div class="q" id="sbQuarter">LOBBY</div>
+      <div class="clk" id="sbClock">—</div>
       <div class="pot" id="sbPot"></div>
     </div>
     <div class="sb-team home">
@@ -303,102 +301,59 @@
     </div>
   </section>
 
-  <!-- ============ PHASE 2: POOL (settings + join) ============ -->
-  <section id="poolPhase" hidden>
-
-    <div class="panel" id="customPanel" hidden>
-      <div class="panel-head">
-        <h2>Name your teams</h2>
-        <button class="btn btn-ghost btn-sm" id="backToMatches">← Back to games</button>
-      </div>
-      <div class="builder">
-        <div>
-          <label class="field-label">Away team</label>
-          <input type="text" id="awayName" placeholder="e.g. Visitors" maxlength="20">
-          <div class="swatches" id="awaySwatches"></div>
-        </div>
-        <div class="vs">@</div>
-        <div>
-          <label class="field-label">Home team</label>
-          <input type="text" id="homeName" placeholder="e.g. Home" maxlength="20">
-          <div class="swatches" id="homeSwatches"></div>
-        </div>
-      </div>
-    </div>
-
+  <!-- ============ PHASE 2: POOL PICKER ============ -->
+  <section id="poolsPhase" hidden>
     <div class="panel">
-      <div class="panel-head"><h2>Pool settings</h2><span class="eyebrow">Buy-in, payouts &amp; players</span></div>
-      <div class="settings-row">
-        <div>
-          <label class="field-label" for="price">Price per square ($)</label>
-          <input type="number" id="price" value="5" min="0" step="1">
-        </div>
-        <div>
-          <label class="field-label" for="splitSel">Quarter payout split</label>
-          <select id="splitSel">
-            <option value="15,25,15,45">Standard — 15 / 25 / 15 / 45</option>
-            <option value="25,25,25,25">Even — 25 / 25 / 25 / 25</option>
-            <option value="20,20,20,40">Heavy final — 20 / 20 / 20 / 40</option>
-          </select>
-        </div>
-        <div>
-          <label class="field-label" for="maxPlayers">Number of players</label>
-          <input type="number" id="maxPlayers" value="10" min="1" max="100" step="1">
-        </div>
-        <div>
-          <label class="field-label">Total pot</label>
-          <input type="text" id="potPreview" value="$500" readonly>
-        </div>
+      <div class="panel-head">
+        <h2>Choose a pool</h2>
+        <button class="btn btn-ghost btn-sm" id="backToGame">← Change game</button>
       </div>
-      <p class="hint" id="capNote" style="margin-top:14px"></p>
+      <div class="pool-cards" id="poolCards"></div>
     </div>
+  </section>
 
-    <div class="prep-layout">
-      <div class="panel roster">
-        <div class="panel-head"><h2>Players</h2></div>
-        <div class="add">
-          <input type="text" id="playerName" placeholder="Add a player" maxlength="16">
-          <button class="btn btn-sm btn-primary" id="addPlayer">Join</button>
-        </div>
-        <p class="hint">Add a player, then tap open squares to join the pool for them. Tap a claimed square to release it.</p>
-        <div class="counts"><span id="claimedCount">0 / 100 claimed</span><span id="spotsLeft"></span></div>
-        <div class="players" id="playersList"></div>
-        <div class="actions" style="margin-top:16px">
-          <button class="btn btn-sm" id="fillRandom">Auto-fill remaining</button>
-          <button class="btn btn-sm btn-ghost" id="clearBoard">Clear</button>
-        </div>
-      </div>
-
+  <!-- ============ PHASE 3: LOBBY ============ -->
+  <section id="lobbyPhase" hidden>
+    <div class="lobby-layout">
       <div class="panel">
         <div class="panel-head">
-          <h2>Choose your squares</h2>
-          <span class="eyebrow" id="openHint">Open squares — pending players</span>
+          <h2>Lobby</h2>
+          <button class="btn btn-ghost btn-sm" id="leaveLobby">← Change pool</button>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label" id="lobbyCount">1 / 10 players</div>
+          <div class="prog-bar"><div class="prog-fill" id="lobbyFill"></div></div>
+        </div>
+        <div id="lobbyPlayersList"></div>
+        <div class="cd-banner" id="countdownBanner" hidden>
+          <div class="cd-num" id="countdownNum">3</div>
+          <div class="cd-lbl">Game starting</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Board preview</h2>
+          <span class="eyebrow">Numbers drawn at kickoff</span>
         </div>
         <div class="board-shell">
-          <div class="board" id="joinBoard"></div>
+          <div class="board preview" id="lobbyBoard"></div>
         </div>
         <div class="legend">
-          <span><i style="background:var(--surface-2);border:1px solid var(--line)"></i> Open / pending</span>
-          <span><i style="background:var(--money)"></i> Numbers drawn at kickoff</span>
-        </div>
-        <div class="actions">
-          <button class="btn btn-ghost" id="backToGame">← Change game</button>
-          <div class="spacer"></div>
-          <button class="btn btn-primary btn-lg" id="lockBoard">Draw numbers &amp; go live →</button>
+          <span><i id="yourColorSwatch" style="background:#e0524a"></i> Your squares</span>
+          <span><i style="background:var(--surface-2);border:1px solid var(--line)"></i> Open / other players</span>
         </div>
       </div>
     </div>
   </section>
 
-
-  <!-- ============ PHASE 3: LIVE ============ -->
+  <!-- ============ PHASE 4: LIVE ============ -->
   <section id="livePhase" hidden>
     <div class="live-layout">
       <div>
         <div class="panel">
           <div class="panel-head">
             <h2>Live board</h2>
-            <span class="eyebrow" id="liveStatus">Enter scores or simulate</span>
+            <span class="eyebrow" id="liveStatus">Simulating…</span>
           </div>
           <div class="board-shell">
             <div class="board locked" id="liveBoard"></div>
@@ -426,7 +381,7 @@
               </div>
             </div>
             <div class="quick">
-              <span class="field-label" style="width:100%">Quick add (home/away)</span>
+              <span class="field-label" style="width:100%">Quick add</span>
               <button class="btn btn-sm" data-quick="away,6">Away TD</button>
               <button class="btn btn-sm" data-quick="away,3">Away FG</button>
               <button class="btn btn-sm" data-quick="home,6">Home TD</button>
@@ -435,7 +390,7 @@
           </div>
           <div class="actions" style="margin-top:4px">
             <button class="btn btn-primary" id="endQuarter">End Q1 &amp; pay winner</button>
-            <button class="btn" id="simBtn">▶ Simulate game</button>
+            <button class="btn" id="simBtn">⏸ Pause</button>
             <div class="spacer"></div>
             <button class="btn btn-ghost btn-sm" id="newPool">New pool</button>
           </div>
@@ -456,7 +411,8 @@
 <script>
 "use strict";
 (function(){
-  /* ---------------- data ---------------- */
+
+  /* ---- data ---- */
   const TEAMS = [
     {name:"Chiefs",abbr:"KC",c:"#E31837"},   {name:"Bills",abbr:"BUF",c:"#00338D"},
     {name:"49ers",abbr:"SF",c:"#AA0000"},    {name:"Cowboys",abbr:"DAL",c:"#0b2c5c"},
@@ -468,40 +424,48 @@
     {name:"Chargers",abbr:"LAC",c:"#0080C6"},{name:"Rams",abbr:"LAR",c:"#003594"}
   ];
   const PRESETS = [
-    {away:"Chiefs",home:"Bills"}, {away:"49ers",home:"Cowboys"},
-    {away:"Eagles",home:"Lions"}, {away:"Ravens",home:"Bengals"},
-    {away:"Dolphins",home:"Chiefs"}, {away:"Packers",home:"Vikings"}
+    {away:"Chiefs",home:"Bills"},   {away:"49ers",home:"Cowboys"},
+    {away:"Eagles",home:"Lions"},   {away:"Ravens",home:"Bengals"},
+    {away:"Dolphins",home:"Chiefs"},{away:"Packers",home:"Vikings"}
   ];
-  const SWATCH_COLORS = ["#E31837","#00338D","#0076B6","#008E97","#FB4F14","#4F2683","#203731","#c89a17","#AA0000","#0b2c5c","#004C54","#9b1d1d"];
-  const PLAYER_COLORS = ["#e0524a","#3ba2e0","#46b87a","#e0a23b","#b07adf","#e06fae","#54c4bd","#d98442","#7d9be0","#c2cb55","#e0746f","#5fd08a"];
+  const POOL_CONFIGS = [
+    {price:1,  maxPlayers:10, label:"Casual",      split:[15,25,15,45]},
+    {price:5,  maxPlayers:10, label:"Standard",    split:[15,25,15,45]},
+    {price:10, maxPlayers:5,  label:"Premium",     split:[20,20,20,40]},
+    {price:20, maxPlayers:5,  label:"High Stakes", split:[25,25,25,25]},
+  ];
+  const BOT_NAMES = ["Mike T.","Sarah K.","Jake M.","Emma R.","Chris P.",
+    "Ashley N.","Tyler B.","Jordan L.","Zach W.","Megan H.","Derek S.","Amanda F."];
+  const PLAYER_COLORS = ["#e0524a","#3ba2e0","#46b87a","#e0a23b","#b07adf",
+    "#e06fae","#54c4bd","#d98442","#7d9be0","#c2cb55","#e0746f","#5fd08a"];
 
   const teamByName = n => TEAMS.find(t => t.name === n);
 
-  /* ---------------- state ---------------- */
+  /* ---- state ---- */
   const S = {
     phase:"game",
-    isCustom:false,
-    maxPlayers:10,
     away:{name:"Away",color:"#E31837"},
     home:{name:"Home",color:"#0080C6"},
     price:5,
     split:[15,25,15,45],
-    squares:Array(100).fill(null),       // playerId or null
-    players:[],                          // {id,name,color}
-    activePlayer:null,
-    colDigits:[0,1,2,3,4,5,6,7,8,9],     // home (top)
-    rowDigits:[0,1,2,3,4,5,6,7,8,9],     // away (left)
+    maxPlayers:10,
+    squares:Array(100).fill(null),
+    players:[],
+    colDigits:[0,1,2,3,4,5,6,7,8,9],
+    rowDigits:[0,1,2,3,4,5,6,7,8,9],
     locked:false,
     score:{home:0,away:0},
-    quarter:1,                           // next quarter to pay (1..4)
-    results:[],                          // {q,home,away,idx,playerId}
-    sim:null
+    quarter:1,
+    results:[],
+    sim:null,
+    lobbyTimer:null,
+    countdownTimer:null,
   };
   let pid = 1;
 
-  /* ---------------- helpers ---------------- */
+  /* ---- helpers ---- */
   const $ = s => document.querySelector(s);
-  const el = (t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+  const el = (t,c) => { const e=document.createElement(t); if(c) e.className=c; return e; };
   function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
   function lum(hex){const h=hex.replace('#','');const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return (0.2126*r+0.7152*g+0.0722*b)/255;}
   const ink = hex => lum(hex) > 0.55 ? "#10140d" : "#ffffff";
@@ -510,12 +474,12 @@
   function abbr3(name){const w=name.trim().split(/\s+/);if(w.length>1)return (w[0][0]+w[1][0]+(w[1][1]||'')).toUpperCase();return name.slice(0,3).toUpperCase();}
   function initials(name){const w=name.trim().split(/\s+/);if(w.length>1)return (w[0][0]+w[1][0]).toUpperCase();return name.slice(0,3);}
   const money = n => "$"+Math.round(n).toLocaleString();
-  const pot = () => S.price*100;
+  const pot = () => S.price * 100;
   const cap = () => Math.ceil(100 / Math.max(1, S.maxPlayers));
-  const playerCount = id => S.squares.filter(x => x === id).length;
-  function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2200);}
+  function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2400);}
+  function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
 
-  /* ---------------- theme injection ---------------- */
+  /* ---- theme ---- */
   function applyTheme(){
     const r=document.documentElement.style;
     r.setProperty('--home',S.home.color);
@@ -524,13 +488,13 @@
     r.setProperty('--away-ink',ink(S.away.color));
   }
 
-  /* =====================================================
-     GAME PICKER
-  ===================================================== */
+  /* ====================================================
+     PHASE 1: GAME PICKER
+  ==================================================== */
   function renderMatchCards(){
-    const box=$("#matchCards");box.innerHTML="";
+    const box=$("#matchCards"); box.innerHTML="";
     PRESETS.forEach(p=>{
-      const a=teamByName(p.away),h=teamByName(p.home);
+      const a=teamByName(p.away), h=teamByName(p.home);
       const card=el("button","match");
       card.type="button";
       card.innerHTML=`<div class="bars"><i style="background:${a.c}"></i><i style="background:${h.c}"></i></div>
@@ -540,77 +504,240 @@
           <div style="text-align:center"><div class="ab" style="color:${readAbbr(h.c)}">${h.abbr}</div><div class="at">${h.name}</div></div>
         </div>`;
       card.onclick=()=>{
-        S.isCustom=false;
-        S.away={name:a.name,color:a.c}; S.home={name:h.name,color:h.c};
+        S.away={name:a.name,color:a.c};
+        S.home={name:h.name,color:h.c};
         applyTheme();
-        enterPool();
+        enterPools();
       };
       box.appendChild(card);
     });
-    const custom=el("button","match custom");custom.type="button";
-    custom.innerHTML=`<div class="body"><div class="plus">+</div><div class="lbl">Build your own</div></div>`;
-    custom.onclick=()=>{
-      S.isCustom=true;
-      S.away={name:"Away",color:"#E31837"}; S.home={name:"Home",color:"#0080C6"};
-      $("#awayName").value=""; $("#homeName").value="";
-      applyTheme(); buildSwatches();
-      enterPool();
-    };
-    box.appendChild(custom);
   }
 
-  function buildSwatches(){
-    [["#awaySwatches","away"],["#homeSwatches","home"]].forEach(([sel,side])=>{
-      const box=$(sel);box.innerHTML="";
-      SWATCH_COLORS.forEach(c=>{
-        const b=el("button","swatch");b.type="button";b.style.background=c;
-        b.setAttribute("aria-pressed", S[side].color===c ? "true":"false");
-        b.onclick=()=>{
-          S[side].color=c;
-          box.querySelectorAll(".swatch").forEach(x=>x.setAttribute("aria-pressed","false"));
-          b.setAttribute("aria-pressed","true");
-          applyTheme(); updateScorebar();
-        };
-        box.appendChild(b);
-      });
+  /* ====================================================
+     PHASE 2: POOL PICKER
+  ==================================================== */
+  function enterPools(){
+    setPhase("pools");
+    renderPoolCards();
+    updateScorebar();
+  }
+
+  function renderPoolCards(){
+    const box=$("#poolCards"); box.innerHTML="";
+    POOL_CONFIGS.forEach(cfg=>{
+      const card=el("div","pool-card");
+      card.tabIndex=0;
+      card.setAttribute("role","button");
+      card.innerHTML=`
+        <div class="pc-eyebrow">${cfg.label}</div>
+        <div class="pc-price"><sup>$</sup>${cfg.price}</div>
+        <div class="pc-persq">per square</div>
+        <div class="pc-meta">
+          ${cfg.maxPlayers} players<br>
+          ${Math.ceil(100 / Math.max(1, cfg.maxPlayers))} squares each
+        </div>
+        <div class="pc-pot">${money(cfg.price*100)} total pot</div>
+        <div class="pc-join">Join →</div>
+      `;
+      card.onclick=()=>enterLobby(cfg);
+      card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();enterLobby(cfg);}});
+      box.appendChild(card);
     });
   }
 
-  /* enter the pool (settings + join) page */
-  function enterPool(){
-    // fresh roster for a new pool
-    S.squares=Array(100).fill(null); S.players=[]; S.activePlayer=null; pid=1;
-    $("#customPanel").hidden = !S.isCustom;
-    setPhase("pool");
-    updatePoolDerived();
+  /* ====================================================
+     PHASE 3: LOBBY
+  ==================================================== */
+  function enterLobby(cfg){
+    clearLobbyTimers();
+    S.price=cfg.price; S.maxPlayers=cfg.maxPlayers; S.split=cfg.split;
+    S.squares=Array(100).fill(null); S.players=[]; pid=1;
+
+    const userColor=PLAYER_COLORS[0];
+    const you={id:pid++,name:"You",color:userColor,isUser:true};
+    S.players.push(you);
+    fillPlayerSquares(you.id, cap());
+
+    const swatch=$("#yourColorSwatch");
+    if(swatch) swatch.style.background=userColor;
+
+    setPhase("lobby");
     updateScorebar();
-    buildBoard("#joinBoard",false);
-    renderPlayers(); updateCounts();
+    buildBoard("#lobbyBoard",false);
+    renderLobbyPlayers();
+    updateLobbyStatus();
+    startLobbyFill();
   }
 
-  function updatePoolDerived(){
-    const p=parseFloat($("#price").value)||0; S.price=p;
-    let mp=parseInt($("#maxPlayers").value,10); if(isNaN(mp)||mp<1)mp=1; if(mp>100)mp=100;
-    S.maxPlayers=mp;
-    $("#potPreview").value=money(p*100);
-    $("#capNote").textContent=`With ${mp} player${mp>1?"s":""}, each player can claim up to ${cap()} square${cap()>1?"s":""}.`;
-    updateCounts();
+  function fillPlayerSquares(playerId, count){
+    const open=[];
+    S.squares.forEach((v,i)=>{ if(v==null) open.push(i); });
+    shuffle(open).slice(0,count).forEach(i=>{ S.squares[i]=playerId; });
   }
 
-  /* =====================================================
+  function startLobbyFill(){
+    const needed=S.maxPlayers-1;
+    let joined=0;
+    const usedNames=new Set(S.players.map(p=>p.name));
+
+    function joinNext(){
+      if(joined>=needed){ triggerCountdown(); return; }
+      const available=BOT_NAMES.filter(n=>!usedNames.has(n));
+      const name=available.length ? available[0] : "Player "+(S.players.length+1);
+      usedNames.add(name);
+      const color=PLAYER_COLORS[S.players.length % PLAYER_COLORS.length];
+      const bot={id:pid++,name,color,isUser:false};
+      S.players.push(bot);
+      fillPlayerSquares(bot.id, cap());
+      joined++;
+
+      buildBoard("#lobbyBoard",false);
+      renderLobbyPlayers();
+      updateLobbyStatus();
+
+      S.lobbyTimer=setTimeout(joinNext, 700+Math.random()*1600);
+    }
+
+    S.lobbyTimer=setTimeout(joinNext, 900+Math.random()*900);
+  }
+
+  function triggerCountdown(){
+    renderLobbyPlayers();
+    updateLobbyStatus();
+    const banner=$("#countdownBanner");
+    const num=$("#countdownNum");
+    banner.hidden=false;
+    let count=3;
+    num.textContent=count;
+
+    function tick(){
+      count--;
+      if(count<=0){ goLive(); return; }
+      num.textContent=count;
+      S.countdownTimer=setTimeout(tick,1000);
+    }
+    S.countdownTimer=setTimeout(tick,1000);
+  }
+
+  function goLive(){
+    clearLobbyTimers();
+    S.colDigits=shuffle([0,1,2,3,4,5,6,7,8,9]);
+    S.rowDigits=shuffle([0,1,2,3,4,5,6,7,8,9]);
+    S.locked=true;
+    setPhase("live");
+    buildBoard("#liveBoard",true);
+    $("#liveBoard").querySelectorAll(".hdr").forEach((h,i)=>{
+      setTimeout(()=>h.classList.add("drawing"),60+i*45);
+    });
+    resetLive();
+    updateScorebar();
+    toast("Numbers drawn — game on!");
+    setTimeout(startSim,1800);
+  }
+
+  function clearLobbyTimers(){
+    if(S.lobbyTimer){clearTimeout(S.lobbyTimer);S.lobbyTimer=null;}
+    if(S.countdownTimer){clearTimeout(S.countdownTimer);S.countdownTimer=null;}
+  }
+
+  function renderLobbyPlayers(){
+    const box=$("#lobbyPlayersList"); box.innerHTML="";
+    S.players.forEach(p=>{
+      const count=S.squares.filter(x=>x===p.id).length;
+      const row=el("div","lobby-player"+(p.isUser?" you":""));
+      row.innerHTML=`<span class="lp-dot" style="background:${p.color}"></span>
+        <span class="lp-name">${escapeHtml(p.name)}${p.isUser?" <span style='color:var(--money);font-size:11px;letter-spacing:.1em'>(you)</span>":""}</span>
+        <span class="lp-count">${count} sq</span>`;
+      box.appendChild(row);
+    });
+    for(let i=S.players.length;i<S.maxPlayers;i++){
+      const row=el("div","lobby-player pending");
+      row.innerHTML=`<span class="lp-dot" style="background:var(--line)"></span>
+        <span class="lp-name" style="color:var(--chalk-faint)">Waiting…</span>`;
+      box.appendChild(row);
+    }
+  }
+
+  function updateLobbyStatus(){
+    const n=S.players.length, total=S.maxPlayers;
+    const pct=Math.round((n/total)*100);
+    $("#lobbyFill").style.width=pct+"%";
+    const left=total-n;
+    $("#lobbyCount").textContent=left>0
+      ? `${n} / ${total} players · ${left} more joining…`
+      : `${total} / ${total} · Pool full!`;
+    $("#sbPot").textContent="Pot "+money(pot());
+  }
+
+  /* ====================================================
+     BOARD
+  ==================================================== */
+  function buildBoard(target,locked){
+    const board=$(target); board.innerHTML=""; board.classList.toggle("locked",!!locked);
+    const homeBand=el("div","axis-team home");
+    homeBand.textContent=S.home.name+" → last digit";
+    homeBand.style.gridRow="1"; homeBand.style.gridColumn="3 / span 10";
+    board.appendChild(homeBand);
+    const awayBand=el("div","axis-left");
+    awayBand.textContent=S.away.name+" → last digit";
+    awayBand.style.gridColumn="1"; awayBand.style.gridRow="3 / span 10";
+    board.appendChild(awayBand);
+    for(let c=0;c<10;c++){
+      const h=el("div","hdr"+(locked?"":" q")); h.dataset.col=c;
+      h.textContent=locked?S.colDigits[c]:"?";
+      h.style.gridRow="2"; h.style.gridColumn=String(3+c);
+      board.appendChild(h);
+    }
+    for(let r=0;r<10;r++){
+      const rh=el("div","hdr"+(locked?"":" q")); rh.dataset.row=r;
+      rh.textContent=locked?S.rowDigits[r]:"?";
+      rh.style.gridRow=String(3+r); rh.style.gridColumn="2";
+      board.appendChild(rh);
+      for(let c=0;c<10;c++){
+        const idx=r*10+c;
+        const cell=el("div","cell"); cell.dataset.idx=idx;
+        cell.style.gridRow=String(3+r); cell.style.gridColumn=String(3+c);
+        renderCell(cell,idx);
+        board.appendChild(cell);
+      }
+    }
+  }
+
+  function renderCell(cell,idx){
+    const pidv=S.squares[idx];
+    cell.innerHTML="";
+    if(pidv!=null){
+      const pl=S.players.find(p=>p.id===pidv);
+      cell.classList.add("taken");
+      const fill=el("div","fill"); fill.style.background=pl?pl.color:"#555"; cell.appendChild(fill);
+      const ini=el("div","ini"); ini.textContent=pl?initials(pl.name):"";
+      ini.style.color=pl?ink(pl.color):"#fff";
+      cell.appendChild(ini);
+    }else{
+      cell.classList.remove("taken");
+    }
+  }
+
+  /* ====================================================
      PHASE SWITCHING
-  ===================================================== */
+  ==================================================== */
   function setPhase(ph){
     S.phase=ph;
     document.body.dataset.phase=ph;
-    $("#gamePhase").hidden = ph!=="game";
-    $("#poolPhase").hidden = ph!=="pool";
-    $("#livePhase").hidden = ph!=="live";
-    $("#scorebar").hidden = ph==="game";
+    $("#gamePhase").hidden  = (ph!=="game");
+    $("#poolsPhase").hidden = (ph!=="pools");
+    $("#lobbyPhase").hidden = (ph!=="lobby");
+    $("#livePhase").hidden  = (ph!=="live");
+    $("#scorebar").hidden   = (ph==="game");
+
+    // both game and pools phases map to stepper step "game"
+    const stepMap={game:"game",pools:"game",lobby:"lobby",live:"live"};
+    const order=["game","lobby","live"];
+    const cur=order.indexOf(stepMap[ph]);
     document.querySelectorAll(".step").forEach(s=>{
-      const order=["game","pool","live"], i=order.indexOf(s.dataset.step), cur=order.indexOf(ph);
-      s.classList.toggle("active", i===cur);
-      s.classList.toggle("done", i<cur);
+      const i=order.indexOf(s.dataset.step);
+      s.classList.toggle("active",i===cur);
+      s.classList.toggle("done",i<cur);
     });
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -623,159 +750,15 @@
     $("#sbAwayScore").textContent=S.score.away;
     $("#sbHomeScore").textContent=S.score.home;
     $("#sbPot").textContent="Pot "+money(pot());
-    if(S.phase==="pool"){ $("#sbQuarter").textContent="LOBBY"; $("#sbClock").textContent="Joining"; }
+    if(S.phase==="pools"){ $("#sbQuarter").textContent="LOBBY"; $("#sbClock").textContent="Choose"; }
+    if(S.phase==="lobby"){ $("#sbQuarter").textContent="LOBBY"; $("#sbClock").textContent="Joining"; }
   }
 
-  /* =====================================================
-     PREP — board + roster
-  ===================================================== */
-  function buildBoard(target,locked){
-    const board=$(target);board.innerHTML="";board.classList.toggle("locked",!!locked);
-    // home team band (top)
-    const homeBand=el("div","axis-team home");
-    homeBand.textContent=S.home.name+" → last digit";
-    homeBand.style.gridRow="1"; homeBand.style.gridColumn="3 / span 10";
-    board.appendChild(homeBand);
-    // away team band (left, vertical)
-    const awayBand=el("div","axis-left");
-    awayBand.textContent=S.away.name+" → last digit";
-    awayBand.style.gridColumn="1"; awayBand.style.gridRow="3 / span 10";
-    board.appendChild(awayBand);
-    // home digit headers (row 2, cols 3..12)
-    for(let c=0;c<10;c++){
-      const h=el("div","hdr"+(locked?"":" q"));h.dataset.col=c;
-      h.textContent=locked?S.colDigits[c]:"?";
-      h.style.gridRow="2"; h.style.gridColumn=String(3+c);
-      board.appendChild(h);
-    }
-    // rows
-    for(let r=0;r<10;r++){
-      const rh=el("div","hdr"+(locked?"":" q"));rh.dataset.row=r;
-      rh.textContent=locked?S.rowDigits[r]:"?";
-      rh.style.gridRow=String(3+r); rh.style.gridColumn="2";
-      board.appendChild(rh);
-      for(let c=0;c<10;c++){
-        const idx=r*10+c;
-        const cell=el("div","cell");cell.dataset.idx=idx;
-        cell.style.gridRow=String(3+r); cell.style.gridColumn=String(3+c);
-        renderCell(cell,idx);
-        if(!locked) cell.onclick=()=>onCellClick(idx);
-        board.appendChild(cell);
-      }
-    }
-  }
-
-  function renderCell(cell,idx){
-    const pidv=S.squares[idx];
-    cell.innerHTML="";
-    if(pidv!=null){
-      const pl=S.players.find(p=>p.id===pidv);
-      cell.classList.add("taken");
-      const fill=el("div","fill");fill.style.background=pl?pl.color:"#555";cell.appendChild(fill);
-      const ini=el("div","ini");ini.textContent=pl?initials(pl.name):"";
-      ini.style.color=pl?ink(pl.color):"#fff";
-      cell.appendChild(ini);
-    }else{
-      cell.classList.remove("taken");
-    }
-  }
-
-  function onCellClick(idx){
-    if(S.squares[idx]!=null){ S.squares[idx]=null; }
-    else{
-      if(!S.activePlayer){ toast("Add a player and select them first"); return; }
-      if(playerCount(S.activePlayer) >= cap()){ toast(`Max ${cap()} squares per player`); return; }
-      S.squares[idx]=S.activePlayer;
-    }
-    renderCell($(`#joinBoard .cell[data-idx="${idx}"]`),idx);
-    updateCounts();
-  }
-
-  function renderPlayers(){
-    const box=$("#playersList");box.innerHTML="";
-    if(!S.players.length){
-      const e=el("p","hint");e.textContent="No players yet — add a few names above.";box.appendChild(e);return;
-    }
-    S.players.forEach(p=>{
-      const count=playerCount(p.id);
-      const full=count>=cap();
-      const row=el("button","player");row.type="button";
-      row.setAttribute("aria-pressed", S.activePlayer===p.id?"true":"false");
-      if(S.activePlayer===p.id) row.classList.add("active-ind");
-      row.innerHTML=`<span class="pdot" style="background:${p.color}"></span>
-        <span class="pn">${escapeHtml(p.name)}</span>
-        <span class="pc"${full?' style="color:var(--money)"':''}>${count}/${cap()}</span>`;
-      const x=el("button","px");x.type="button";x.textContent="✕";x.title="Remove player";
-      x.onclick=ev=>{ev.stopPropagation();removePlayer(p.id);};
-      row.appendChild(x);
-      row.onclick=()=>{S.activePlayer=p.id;renderPlayers();};
-      box.appendChild(row);
-    });
-  }
-  function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
-
-  function addPlayer(){
-    const inp=$("#playerName");const name=inp.value.trim();
-    if(!name) return;
-    if(S.players.length >= S.maxPlayers){ toast(`Pool is full — ${S.maxPlayers} players max`); return; }
-    const color=PLAYER_COLORS[S.players.length % PLAYER_COLORS.length];
-    const id=pid++; S.players.push({id,name,color});
-    S.activePlayer=id; inp.value=""; inp.focus();
-    renderPlayers(); updateCounts();
-  }
-  function removePlayer(id){
-    S.players=S.players.filter(p=>p.id!==id);
-    S.squares=S.squares.map(x=>x===id?null:x);
-    if(S.activePlayer===id) S.activePlayer=S.players.length?S.players[0].id:null;
-    renderPlayers(); buildBoard("#joinBoard",false); updateCounts();
-  }
-
-  function updateCounts(){
-    const taken=S.squares.filter(x=>x!=null).length;
-    $("#claimedCount").textContent=taken+" / 100 claimed";
-    const spots=Math.max(0,S.maxPlayers-S.players.length);
-    $("#spotsLeft").textContent=(100-taken)+" open · "+spots+" spot"+(spots===1?"":"s")+" left";
-    renderPlayers();
-  }
-
-  function fillRandom(){
-    if(!S.players.length){toast("Add at least one player first");return;}
-    const open=[];S.squares.forEach((v,i)=>{if(v==null)open.push(i);});
-    for(const idx of shuffle(open)){
-      const eligible=S.players.filter(p=>playerCount(p.id)<cap());
-      if(!eligible.length){ toast("Everyone hit their square limit"); break; }
-      eligible.sort((a,b)=>playerCount(a.id)-playerCount(b.id));
-      S.squares[idx]=eligible[0].id;
-    }
-    buildBoard("#joinBoard",false); updateCounts();
-  }
-  function clearBoard(){ S.squares=Array(100).fill(null); buildBoard("#joinBoard",false); updateCounts(); }
-
-  /* =====================================================
-     LOCK + draw numbers
-  ===================================================== */
-  function lockBoard(){
-    const taken=S.squares.filter(x=>x!=null).length;
-    if(taken===0){toast("Claim at least one square first");return;}
-    S.colDigits=shuffle([0,1,2,3,4,5,6,7,8,9]);
-    S.rowDigits=shuffle([0,1,2,3,4,5,6,7,8,9]);
-    S.locked=true;
-    setPhase("live");
-    buildBoard("#liveBoard",true);
-    // animate the number draw
-    const hdrs=$("#liveBoard").querySelectorAll(".hdr");
-    hdrs.forEach((h,i)=>{setTimeout(()=>h.classList.add("drawing"),60+i*45);});
-    resetLive();
-    updateScorebar();
-    toast("Numbers drawn — game on");
-  }
-
-  /* =====================================================
-     LIVE
-  ===================================================== */
+  /* ====================================================
+     LIVE PHASE
+  ==================================================== */
   function resetLive(){
-    S.score={home:0,away:0};
-    S.quarter=1; S.results=[];
+    S.score={home:0,away:0}; S.quarter=1; S.results=[];
     $("#awayEditLbl").textContent=S.away.name;
     $("#homeEditLbl").textContent=S.home.name;
     $("#potTag").textContent="Pot "+money(pot());
@@ -813,11 +796,9 @@
     const playerId=S.squares[idx];
     const pl=S.players.find(p=>p.id===playerId);
     S.results.push({q:S.quarter,home:S.score.home,away:S.score.away,idx,playerId});
-    // highlight
     clearWinHighlight();
     const cell=$(`#liveBoard .cell[data-idx="${idx}"]`);
     if(cell){cell.classList.add("win");cell.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});}
-    // banner
     const pay=quarterPayout(S.quarter);
     const qname=S.quarter===4?"Final":"Q"+S.quarter;
     const winnerTxt=pl?pl.name:"Open square — no winner";
@@ -827,9 +808,9 @@
     renderResults();
     S.quarter++;
     updateEndBtn();
-    if(pl) toast(`${qname} pays ${pl.name} — ${money(pay)}`);
+    if(pl) toast(`${qname} winner: ${pl.name} — ${money(pay)}`);
     if(S.quarter>4){ $("#sbQuarter").textContent="FINAL"; $("#sbClock").textContent="0:00"; if(S.sim) stopSim(); }
-    else { $("#sbQuarter").textContent="Q"+S.quarter; }
+    else{ $("#sbQuarter").textContent="Q"+S.quarter; }
   }
 
   function updateEndBtn(){
@@ -840,7 +821,7 @@
   }
 
   function renderResults(){
-    const box=$("#resultsList");box.innerHTML="";
+    const box=$("#resultsList"); box.innerHTML="";
     for(let q=1;q<=4;q++){
       const r=S.results.find(x=>x.q===q);
       const qname=q===4?"Final":"Q"+q;
@@ -863,69 +844,61 @@
     }
   }
 
-  /* ---------- simulation ---------- */
+  /* ---- simulation ---- */
   function startSim(){
-    if(S.quarter>4){toast("Game already complete");return;}
+    if(S.quarter>4){ toast("Game already complete"); return; }
     $("#simBtn").textContent="⏸ Pause";
     $("#liveStatus").textContent="Simulating…";
     let tick=0;
-    const QTICKS=22; // ticks per quarter
+    const QTICKS=22;
     S.sim=setInterval(()=>{
       tick++;
-      // random scoring event
-      const roll=Math.random();
-      if(roll>0.80){ // score
+      if(Math.random()>0.80){
         const side=Math.random()<0.5?"home":"away";
-        const pts=Math.random()<0.55?7:3;
-        S.score[side]+=pts;
+        S.score[side]+=Math.random()<0.55?7:3;
         updateScoreEditors();
       }
-      // clock
       const remain=Math.max(0,QTICKS-tick);
       const secs=Math.round((remain/QTICKS)*900);
       $("#sbClock").textContent=Math.floor(secs/60)+":"+String(secs%60).padStart(2,"0");
       if(tick>=QTICKS){
-        endQuarter();
-        tick=0;
+        endQuarter(); tick=0;
         if(S.quarter>4){ stopSim(); $("#liveStatus").textContent="Final"; }
       }
     },380);
   }
-  function stopSim(){ if(S.sim){clearInterval(S.sim);S.sim=null;} $("#simBtn").textContent="▶ Simulate game"; $("#liveStatus").textContent=S.quarter>4?"Final":"Enter scores or simulate"; }
+
+  function stopSim(){
+    if(S.sim){clearInterval(S.sim);S.sim=null;}
+    $("#simBtn").textContent="▶ Resume";
+    if(S.quarter<=4) $("#liveStatus").textContent="Paused — enter scores or resume";
+  }
+
   function toggleSim(){ if(S.sim) stopSim(); else startSim(); }
 
-  /* =====================================================
+  /* ====================================================
      WIRING
-  ===================================================== */
+  ==================================================== */
   function init(){
-    renderMatchCards(); buildSwatches(); applyTheme();
+    renderMatchCards();
+    applyTheme();
 
-    $("#price").addEventListener("input",updatePoolDerived);
-    $("#maxPlayers").addEventListener("input",updatePoolDerived);
-    $("#splitSel").addEventListener("change",e=>{S.split=e.target.value.split(",").map(Number);});
-    $("#awayName").addEventListener("input",()=>{S.away.name=$("#awayName").value.trim()||"Away";updateScorebar();});
-    $("#homeName").addEventListener("input",()=>{S.home.name=$("#homeName").value.trim()||"Home";updateScorebar();});
-    $("#backToMatches").onclick=()=>setPhase("game");
-
-    $("#addPlayer").onclick=addPlayer;
-    $("#playerName").addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer();});
-    $("#fillRandom").onclick=fillRandom;
-    $("#clearBoard").onclick=clearBoard;
     $("#backToGame").onclick=()=>setPhase("game");
-    $("#lockBoard").onclick=lockBoard;
+    $("#leaveLobby").onclick=()=>{ clearLobbyTimers(); $("#countdownBanner").hidden=true; setPhase("pools"); };
 
     document.querySelectorAll(".rbtn").forEach(b=>b.onclick=()=>changeScore(b.dataset.side,parseInt(b.dataset.d,10)));
     document.querySelectorAll("[data-quick]").forEach(b=>b.onclick=()=>{
-      if(S.sim)return;
+      if(S.sim) return;
       const [side,pts]=b.dataset.quick.split(",");
       S.score[side]+=parseInt(pts,10); updateScoreEditors();
     });
-    $("#endQuarter").onclick=()=>{ if(S.sim)stopSim(); endQuarter(); };
+    $("#endQuarter").onclick=()=>{ if(S.sim) stopSim(); endQuarter(); };
     $("#simBtn").onclick=toggleSim;
     $("#newPool").onclick=()=>{
-      stopSim();
-      S.squares=Array(100).fill(null); S.players=[]; S.activePlayer=null; pid=1;
+      stopSim(); clearLobbyTimers();
+      S.squares=Array(100).fill(null); S.players=[]; pid=1;
       S.locked=false; S.score={home:0,away:0}; S.quarter=1; S.results=[];
+      $("#countdownBanner").hidden=true;
       setPhase("game");
     };
   }
